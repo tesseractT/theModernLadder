@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Modules\Ingredients\Domain\Models;
+
+use App\Modules\Shared\Domain\Enums\ContentStatus;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Substitution extends Model
+{
+    use HasFactory;
+    use HasUlids;
+    use SoftDeletes;
+
+    protected $fillable = [
+        'ingredient_id',
+        'substitute_ingredient_id',
+        'note',
+        'status',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => ContentStatus::class,
+        ];
+    }
+
+    public function ingredient(): BelongsTo
+    {
+        return $this->belongsTo(Ingredient::class);
+    }
+
+    public function substituteIngredient(): BelongsTo
+    {
+        return $this->belongsTo(Ingredient::class, 'substitute_ingredient_id');
+    }
+}

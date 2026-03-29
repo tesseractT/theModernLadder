@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Modules\Shared\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class ForceJsonResponse
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $acceptHeader = $request->header('Accept');
+
+        if ($acceptHeader === null || $acceptHeader === '*/*') {
+            $request->headers->set('Accept', 'application/json');
+        }
+
+        return $next($request);
+    }
+}
