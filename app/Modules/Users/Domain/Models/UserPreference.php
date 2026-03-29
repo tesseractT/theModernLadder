@@ -12,6 +12,8 @@ class UserPreference extends Model
     use HasFactory;
     use HasUlids;
 
+    public const FOOD_PREFERENCES_KEY = 'food_preferences';
+
     protected $fillable = [
         'user_id',
         'key',

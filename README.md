@@ -1,6 +1,6 @@
 # The Modern Ladder Backend
 
-Production-grade Step 1 backend foundation for a mobile-first food discovery platform built with Laravel, PostgreSQL, Redis, and an API-first modular monolith architecture.
+Production-grade backend foundation for a mobile-first food discovery platform built with Laravel, PostgreSQL, Redis, and an API-first modular monolith architecture.
 
 ## Product guardrails
 
@@ -14,12 +14,12 @@ Production-grade Step 1 backend foundation for a mobile-first food discovery pla
 - Laravel 13
 - PostgreSQL as the primary database
 - Redis for cache and queues
-- Sanctum installed as the minimal token-auth foundation
+- Sanctum personal access tokens for Flutter/mobile auth
 - REST API designed for a Flutter client
 
 ## Module structure
 
-See [docs/backend/architecture.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/architecture.md) for the full Step 1 architecture note.
+See [docs/backend/architecture.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/architecture.md) for the foundation architecture note and [docs/backend/authentication.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/authentication.md) for Flutter auth usage.
 
 Core modules:
 
@@ -51,16 +51,25 @@ Useful commands:
 - `composer lint`
 - `composer format`
 
-## Step 1 deliverables
+## Implemented so far
 
 - Laravel API bootstrapped in this repository
 - Explicit module boundaries under `app/Modules`
 - PostgreSQL and Redis defaults configured for local and production-like development
-- Sanctum installed only as auth groundwork
-- Lean core schema for the first set of bounded entities
-- Basic API scaffolding with versioned routes, requests, resources, and tests
-- Documentation for what exists now and what belongs in Step 2
+- Sanctum-based register, login, logout, and bearer-token account auth
+- Lean core schema for users, profiles, preferences, ingredients, recipes, and moderation foundations
+- Versioned API scaffolding with request validation, resources, and feature tests
+- Documentation for Flutter authentication and current backend scope
 
-## Step 2 recommendation
+## Current auth endpoints
 
-Implement the authentication and onboarding slice next: issue and revoke Sanctum tokens, create profile completion flows, and expose authenticated `me`, preferences, and pantry management endpoints behind the new module boundaries.
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/me`
+- `PATCH /api/v1/me/profile`
+- `PATCH /api/v1/me/preferences`
+
+## Step 3 recommendation
+
+Implement pantry CRUD next so authenticated users can add pantry items, normalize them against ingredients, and give the Flutter client its first real product workflow on top of the new account/auth foundation.

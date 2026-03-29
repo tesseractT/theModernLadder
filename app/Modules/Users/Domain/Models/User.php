@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -57,6 +58,12 @@ class User extends Authenticatable
         return $this->hasMany(UserPreference::class);
     }
 
+    public function foodPreference(): HasOne
+    {
+        return $this->hasOne(UserPreference::class)
+            ->where('key', UserPreference::FOOD_PREFERENCES_KEY);
+    }
+
     public function pantryItems(): HasMany
     {
         return $this->hasMany(PantryItem::class);
@@ -85,5 +92,18 @@ class User extends Authenticatable
     public function assignedModerationCases(): HasMany
     {
         return $this->hasMany(ModerationCase::class, 'assigned_to_user_id');
+    }
+
+    public function resolvedFoodPreferences(): array
+    {
+        return array_replace(
+            config('user_preferences.defaults', []),
+            $this->foodPreference?->value ?? []
+        );
+    }
+
+    public function defaultDisplayName(): string
+    {
+        return Str::headline((string) Str::of($this->email)->before('@'));
     }
 }

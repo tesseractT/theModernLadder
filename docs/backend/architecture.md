@@ -1,5 +1,7 @@
 # Backend Architecture Note
 
+Step 1 established the modular monolith foundation. Step 2 builds on that by adding Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`.
+
 ## Step 1 goal
 
 Step 1 establishes a Laravel modular monolith foundation for a Flutter-facing REST API. The focus is infrastructure, module boundaries, lean domain modeling, and safe defaults for future expansion.
@@ -35,13 +37,13 @@ Cross-cutting concerns live in `Shared` so the domain modules do not depend on o
 
 ## Explicitly deferred
 
-- Login, registration, token issuance, logout, and device/session management
 - Recommendation logic, AI calls, and nutrition computation
 - Moderation workflow engines and admin dashboards
 - Realtime features and notifications delivery
+- Advanced token expiration strategy, MFA, password reset, email verification, and social login
 - Recipe ingredient line modeling, shopping lists, or meal planning
 - Advanced trust scoring, abuse detection, and gamification rules
 
-## Recommended Step 2
+## Recommended Step 3
 
-Build the authenticated account slice: token issuance with Sanctum, authenticated `me` endpoints, profile completion, preference management, and pantry CRUD. That gives the Flutter client a secure first integration surface while staying inside the new module boundaries.
+Build pantry CRUD next. That gives authenticated users a meaningful first product workflow, lets Flutter persist pantry state, and sets up ingredient normalization without pulling recommendation logic or AI into scope too early.
