@@ -1,6 +1,6 @@
 # Backend Architecture Note
 
-Step 1 established the modular monolith foundation. Step 2 builds on that by adding Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`.
+Step 1 established the modular monolith foundation. Step 2 added Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`. Step 3 added authenticated ingredient lookup and pantry CRUD as the first real product workflow. Step 4 now adds deterministic pantry-to-suggestion generation on top of the same module boundaries.
 
 ## Step 1 goal
 
@@ -31,19 +31,21 @@ Cross-cutting concerns live in `Shared` so the domain modules do not depend on o
 - ULIDs are used across core domain tables for stable external identifiers and better distributed-system ergonomics later.
 - Profiles and user preferences are separated from the auth-focused `users` table.
 - Ingredients, pairings, substitutions, and recipe templates include lightweight publication state so trust and moderation can grow without reworking the schema.
+- Recipe templates now use a minimal `recipe_template_ingredients` relation plus lightweight `recipe_type` and `dietary_patterns` metadata so suggestions stay deterministic and inspectable.
 - Pantry items support both raw entered names and optional normalized ingredient links.
 - Contributions and moderation cases are modeled as structured, auditable records rather than implicit flags.
 - Contributor reputation is stored as an aggregate table, not derived logic, so scoring rules can evolve later.
 
 ## Explicitly deferred
 
-- Recommendation logic, AI calls, and nutrition computation
+- AI-driven recommendation logic and nutrition computation
+- Natural-language explanation generation and external recipe retrieval
 - Moderation workflow engines and admin dashboards
 - Realtime features and notifications delivery
 - Advanced token expiration strategy, MFA, password reset, email verification, and social login
-- Recipe ingredient line modeling, shopping lists, or meal planning
+- Shopping lists, meal planning, grocery workflows, or barcode ingestion
 - Advanced trust scoring, abuse detection, and gamification rules
 
-## Recommended Step 3
+## Recommended Step 5
 
-Build pantry CRUD next. That gives authenticated users a meaningful first product workflow, lets Flutter persist pantry state, and sets up ingredient normalization without pulling recommendation logic or AI into scope too early.
+Build the recipe-template follow-through layer next. The backend now returns structured suggestion candidates, so the best next step is to expose richer template detail and a small curated starter catalog that Flutter can open directly after suggestion generation.

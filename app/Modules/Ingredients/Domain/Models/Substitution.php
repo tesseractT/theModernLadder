@@ -3,6 +3,7 @@
 namespace App\Modules\Ingredients\Domain\Models;
 
 use App\Modules\Shared\Domain\Enums\ContentStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,11 @@ class Substitution extends Model
         return [
             'status' => ContentStatus::class,
         ];
+    }
+
+    public function scopePublished(Builder $query): Builder
+    {
+        return $query->where('status', ContentStatus::Published->value);
     }
 
     public function ingredient(): BelongsTo

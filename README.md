@@ -19,7 +19,7 @@ Production-grade backend foundation for a mobile-first food discovery platform b
 
 ## Module structure
 
-See [docs/backend/architecture.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/architecture.md) for the foundation architecture note and [docs/backend/authentication.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/authentication.md) for Flutter auth usage.
+See [docs/backend/architecture.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/authentication.md) for Flutter auth usage, [docs/backend/pantry.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/pantry.md) for pantry integration, and [docs/backend/suggestions.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/suggestions.md) for the deterministic suggestion layer.
 
 Core modules:
 
@@ -58,6 +58,7 @@ Useful commands:
 - PostgreSQL and Redis defaults configured for local and production-like development
 - Sanctum-based register, login, logout, and bearer-token account auth
 - Lean core schema for users, profiles, preferences, ingredients, recipes, and moderation foundations
+- Authenticated pantry CRUD, ingredient lookup, and deterministic pantry-to-suggestion generation
 - Versioned API scaffolding with request validation, resources, and feature tests
 - Documentation for Flutter authentication and current backend scope
 
@@ -70,6 +71,18 @@ Useful commands:
 - `PATCH /api/v1/me/profile`
 - `PATCH /api/v1/me/preferences`
 
-## Step 3 recommendation
+## Current pantry endpoints
 
-Implement pantry CRUD next so authenticated users can add pantry items, normalize them against ingredients, and give the Flutter client its first real product workflow on top of the new account/auth foundation.
+- `GET /api/v1/ingredients/search?q=...`
+- `GET /api/v1/me/pantry`
+- `POST /api/v1/me/pantry`
+- `PATCH /api/v1/me/pantry/{pantryItem}`
+- `DELETE /api/v1/me/pantry/{pantryItem}`
+
+## Current suggestion endpoint
+
+- `POST /api/v1/me/suggestions`
+
+## Step 5 recommendation
+
+Build the recipe-template follow-through surface next: expose richer structured recipe-template detail for suggested candidates, plus the first curated starter catalog workflow, so Flutter can move from “candidate found” to “user can actually open and use it” without introducing AI yet.

@@ -15,6 +15,8 @@ All endpoints remain versioned under `/api/v1`.
 - `PATCH /api/v1/me/profile`
 - `PATCH /api/v1/me/preferences`
 
+Authenticated product endpoints such as pantry CRUD and `POST /api/v1/me/suggestions` use the same bearer-token flow.
+
 ## Token flow for Flutter
 
 1. Register or log in with the auth endpoints.
@@ -158,4 +160,4 @@ This step intentionally keeps preferences lightweight and food-focused. No medic
 - Social login
 - Token expiration and device/session management UX
 - Account deletion
-- Pantry, recipe, ingredient, moderation, notifications, or AI flows
+- Recipe recommendation, moderation, notifications, and AI flows

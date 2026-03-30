@@ -13,6 +13,8 @@ class RecipeTemplateResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'slug' => $this->slug,
+            'recipe_type' => $this->recipe_type?->value,
+            'dietary_patterns' => $this->dietary_patterns ?? [],
             'summary' => $this->summary,
             'instructions' => $this->instructions,
             'servings' => $this->servings,

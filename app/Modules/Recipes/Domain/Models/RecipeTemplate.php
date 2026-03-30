@@ -2,6 +2,7 @@
 
 namespace App\Modules\Recipes\Domain\Models;
 
+use App\Modules\Recipes\Domain\Enums\RecipeType;
 use App\Modules\Shared\Domain\Enums\ContentStatus;
 use App\Modules\Users\Domain\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RecipeTemplate extends Model
@@ -20,6 +22,8 @@ class RecipeTemplate extends Model
     protected $fillable = [
         'title',
         'slug',
+        'recipe_type',
+        'dietary_patterns',
         'summary',
         'instructions',
         'servings',
@@ -32,6 +36,8 @@ class RecipeTemplate extends Model
     protected function casts(): array
     {
         return [
+            'recipe_type' => RecipeType::class,
+            'dietary_patterns' => 'array',
             'servings' => 'integer',
             'prep_minutes' => 'integer',
             'cook_minutes' => 'integer',
@@ -47,5 +53,12 @@ class RecipeTemplate extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    public function templateIngredients(): HasMany
+    {
+        return $this->hasMany(RecipeTemplateIngredient::class)
+            ->orderBy('sort_order')
+            ->orderBy('created_at');
     }
 }

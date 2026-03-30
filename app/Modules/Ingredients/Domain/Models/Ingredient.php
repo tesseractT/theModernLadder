@@ -3,6 +3,7 @@
 namespace App\Modules\Ingredients\Domain\Models;
 
 use App\Modules\Pantry\Domain\Models\PantryItem;
+use App\Modules\Recipes\Domain\Models\RecipeTemplateIngredient;
 use App\Modules\Shared\Domain\Enums\ContentStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -64,5 +65,10 @@ class Ingredient extends Model
     public function pantryItems(): HasMany
     {
         return $this->hasMany(PantryItem::class);
+    }
+
+    public function recipeTemplateIngredients(): HasMany
+    {
+        return $this->hasMany(RecipeTemplateIngredient::class);
     }
 }

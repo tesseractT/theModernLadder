@@ -5,6 +5,7 @@ namespace App\Modules\Pantry\Domain\Models;
 use App\Modules\Ingredients\Domain\Models\Ingredient;
 use App\Modules\Pantry\Domain\Enums\PantryItemStatus;
 use App\Modules\Users\Domain\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,5 +46,18 @@ class PantryItem extends Model
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', PantryItemStatus::Active->value);
+    }
+
+    public function scopeOwnedBy(Builder $query, User|string $user): Builder
+    {
+        return $query->where(
+            'user_id',
+            $user instanceof User ? $user->getKey() : $user
+        );
     }
 }
