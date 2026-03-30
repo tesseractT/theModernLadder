@@ -16,6 +16,7 @@ All endpoints remain versioned under `/api/v1`.
 - `PATCH /api/v1/me/preferences`
 
 Authenticated product endpoints such as pantry CRUD and `POST /api/v1/me/suggestions` use the same bearer-token flow.
+The Step 5 detail endpoint `GET /api/v1/recipes/templates/{recipeTemplate}` uses that same token pattern.
 
 ## Token flow for Flutter
 

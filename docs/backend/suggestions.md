@@ -10,6 +10,8 @@ All endpoints remain versioned under `/api/v1`.
 
 This endpoint uses the same bearer-token flow documented in [authentication.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/authentication.md).
 
+Suggestion candidates can now be opened through [recipe-templates.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/recipe-templates.md) with `GET /api/v1/recipes/templates/{recipeTemplate}`.
+
 ## Request shape
 
 Request body fields:
@@ -199,10 +201,9 @@ Recipe templates participate in suggestions only when they have:
 
 Step 4 tests build a tiny starter catalog around templates such as smoothie, salsa, bowl, and yogurt mix. A broader curated template catalog is deferred.
 
-## Deferred to Step 5
+## Deferred to Step 6
 
-- richer recipe-template detail retrieval for suggestion follow-through
-- broader curated starter catalog or ingestion workflow
+- user save/bookmark or cooked-history interactions after detail view
 - nutrition calculations
 - AI explanations or natural-language generation
 - advanced ranking, personalization, or recommendation learning

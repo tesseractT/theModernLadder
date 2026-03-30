@@ -2,6 +2,7 @@
 
 namespace App\Modules\Recipes\Domain\Models;
 
+use App\Modules\Recipes\Domain\Enums\RecipeDifficulty;
 use App\Modules\Recipes\Domain\Enums\RecipeType;
 use App\Modules\Shared\Domain\Enums\ContentStatus;
 use App\Modules\Users\Domain\Models\User;
@@ -23,6 +24,7 @@ class RecipeTemplate extends Model
         'title',
         'slug',
         'recipe_type',
+        'difficulty',
         'dietary_patterns',
         'summary',
         'instructions',
@@ -37,6 +39,7 @@ class RecipeTemplate extends Model
     {
         return [
             'recipe_type' => RecipeType::class,
+            'difficulty' => RecipeDifficulty::class,
             'dietary_patterns' => 'array',
             'servings' => 'integer',
             'prep_minutes' => 'integer',
@@ -59,6 +62,13 @@ class RecipeTemplate extends Model
     {
         return $this->hasMany(RecipeTemplateIngredient::class)
             ->orderBy('sort_order')
+            ->orderBy('created_at');
+    }
+
+    public function steps(): HasMany
+    {
+        return $this->hasMany(RecipeTemplateStep::class)
+            ->orderBy('position')
             ->orderBy('created_at');
     }
 }

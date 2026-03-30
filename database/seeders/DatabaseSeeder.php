@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Step 1 intentionally keeps seed data minimal.
+        $this->call([
+            StarterRecipeTemplateCatalogSeeder::class,
+        ]);
     }
 }

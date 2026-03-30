@@ -19,7 +19,7 @@ Production-grade backend foundation for a mobile-first food discovery platform b
 
 ## Module structure
 
-See [docs/backend/architecture.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/authentication.md) for Flutter auth usage, [docs/backend/pantry.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/pantry.md) for pantry integration, and [docs/backend/suggestions.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/suggestions.md) for the deterministic suggestion layer.
+See [docs/backend/architecture.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/authentication.md) for Flutter auth usage, [docs/backend/pantry.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/suggestions.md) for deterministic suggestions, and [docs/backend/recipe-templates.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/recipe-templates.md) for template detail follow-through.
 
 Core modules:
 
@@ -42,8 +42,9 @@ Core modules:
 2. Install dependencies: `composer install`
 3. Generate the key: `php artisan key:generate`
 4. Run migrations: `php artisan migrate`
-5. Start the API: `composer dev`
-6. Start a worker when needed: `composer queue:work`
+5. Load the starter catalog: `php artisan db:seed`
+6. Start the API: `composer dev`
+7. Start a worker when needed: `composer queue:work`
 
 Useful commands:
 
@@ -83,6 +84,10 @@ Useful commands:
 
 - `POST /api/v1/me/suggestions`
 
-## Step 5 recommendation
+## Current recipe detail endpoint
 
-Build the recipe-template follow-through surface next: expose richer structured recipe-template detail for suggested candidates, plus the first curated starter catalog workflow, so Flutter can move from “candidate found” to “user can actually open and use it” without introducing AI yet.
+- `GET /api/v1/recipes/templates/{recipeTemplate}`
+
+## Step 6 recommendation
+
+Build the template interaction loop next: add lightweight save/bookmark and “cooked this” style endpoints so the app can persist what users act on after opening a suggestion, creating clean first-party feedback signals before any AI or advanced personalization work.

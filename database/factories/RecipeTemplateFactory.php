@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Modules\Recipes\Domain\Enums\RecipeDifficulty;
 use App\Modules\Recipes\Domain\Enums\RecipeType;
 use App\Modules\Recipes\Domain\Models\RecipeTemplate;
 use App\Modules\Shared\Domain\Enums\ContentStatus;
@@ -23,6 +24,7 @@ class RecipeTemplateFactory extends Factory
             'title' => Str::title($title),
             'slug' => Str::slug($title),
             'recipe_type' => fake()->randomElement(RecipeType::values()),
+            'difficulty' => fake()->randomElement(RecipeDifficulty::values()),
             'dietary_patterns' => [],
             'summary' => fake()->sentence(12),
             'instructions' => implode("\n\n", fake()->paragraphs(3)),

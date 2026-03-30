@@ -1,6 +1,6 @@
 # Pantry API Guide
 
-Step 3 adds the first authenticated product workflow: canonical ingredient lookup plus user pantry CRUD. Step 4 builds on that pantry state with deterministic suggestions documented in [suggestions.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/suggestions.md).
+Step 3 adds the first authenticated product workflow: canonical ingredient lookup plus user pantry CRUD. Step 4 builds on that pantry state with deterministic suggestions documented in [suggestions.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/suggestions.md). Step 5 then opens those suggestion candidates into pantry-aware template detail in [recipe-templates.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/recipe-templates.md).
 
 ## Endpoints
 
@@ -181,9 +181,8 @@ Pantry removal uses the existing soft-delete setup on `pantry_items`. The item i
 - all pantry reads and writes are scoped to the authenticated user
 - cross-user pantry item update and delete attempts return `404` because the item lookup is owner-scoped
 
-## Deferred to Step 5
+## Deferred to Step 6
 
-- richer recipe-template detail retrieval after a candidate is chosen
-- broader curated starter template catalog
+- user save/bookmark or cooked-history actions after opening a template
 - AI explanations
 - grocery lists, barcode scanning, analytics, or nutrition calculations
