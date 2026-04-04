@@ -42,7 +42,7 @@
             "@php artisan serve --host=0.0.0.0 --port=8000"
         ],
         "queue:work": [
-            "@php artisan queue:work redis --queue=default --tries=3 --backoff=5"
+            "@php artisan queue:work --queue=default --tries=3 --backoff=5"
         ],
         "lint": [
             "vendor/bin/pint --test"

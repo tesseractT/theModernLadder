@@ -19,7 +19,7 @@ Production-grade backend foundation for a mobile-first food discovery platform b
 
 ## Module structure
 
-See [docs/backend/architecture.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/authentication.md) for Flutter auth usage, [docs/backend/pantry.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/suggestions.md) for deterministic suggestions, and [docs/backend/recipe-templates.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/recipe-templates.md) for template detail follow-through.
+See [docs/backend/architecture.md](docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](docs/backend/authentication.md) for Flutter auth usage, [docs/backend/pantry.md](docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](docs/backend/suggestions.md) for deterministic suggestions, [docs/backend/recipe-templates.md](docs/backend/recipe-templates.md) for template detail follow-through, and [docs/backend/recipe-template-explanations.md](docs/backend/recipe-template-explanations.md) for the grounded AI explanation layer.
 
 Core modules:
 
@@ -34,7 +34,7 @@ Core modules:
 - `Reputation`: contributor reputation aggregates
 - `Notifications`: future notification delivery boundaries
 - `Admin`: future internal tooling and audit operations
-- `AI`: reserved boundary for later server-side AI orchestration
+- `AI`: server-side grounded explanation orchestration
 
 ## Local setup
 
@@ -43,14 +43,18 @@ Core modules:
 3. Generate the key: `php artisan key:generate`
 4. Run migrations: `php artisan migrate`
 5. Load the starter catalog: `php artisan db:seed`
-6. Start the API: `composer dev`
-7. Start a worker when needed: `composer queue:work`
+6. Install Flutter dependencies once: `cd apps/flutter_app && flutter pub get`
+7. Start Laravel plus Flutter together: `./dev.sh`
+8. Start the API only when needed: `composer dev`
+9. Start a worker when needed: `composer queue:work`
 
 Useful commands:
 
 - `composer test`
 - `composer lint`
 - `composer format`
+- `./dev.sh chrome`
+- `./dev.sh ios`
 
 ## Implemented so far
 
@@ -60,6 +64,7 @@ Useful commands:
 - Sanctum-based register, login, logout, and bearer-token account auth
 - Lean core schema for users, profiles, preferences, ingredients, recipes, and moderation foundations
 - Authenticated pantry CRUD, ingredient lookup, and deterministic pantry-to-suggestion generation
+- Pantry-aware recipe-template detail and grounded server-side AI explanations
 - Versioned API scaffolding with request validation, resources, and feature tests
 - Documentation for Flutter authentication and current backend scope
 
@@ -88,6 +93,10 @@ Useful commands:
 
 - `GET /api/v1/recipes/templates/{recipeTemplate}`
 
-## Step 6 recommendation
+## Current recipe explanation endpoint
 
-Build the template interaction loop next: add lightweight save/bookmark and “cooked this” style endpoints so the app can persist what users act on after opening a suggestion, creating clean first-party feedback signals before any AI or advanced personalization work.
+- `POST /api/v1/recipes/templates/{recipeTemplate}/explanation`
+
+## Step 7 recommendation
+
+Build the template interaction loop next: add lightweight save/bookmark and “cooked this” style endpoints so the app can persist what users act on after opening a suggestion or reading an explanation, creating clean first-party feedback signals before deeper personalization work.

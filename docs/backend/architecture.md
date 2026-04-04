@@ -1,6 +1,6 @@
 # Backend Architecture Note
 
-Step 1 established the modular monolith foundation. Step 2 added Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`. Step 3 added authenticated ingredient lookup and pantry CRUD as the first real product workflow. Step 4 added deterministic pantry-to-suggestion generation. Step 5 now adds pantry-aware recipe-template detail plus a rerunnable starter catalog.
+Step 1 established the modular monolith foundation. Step 2 added Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`. Step 3 added authenticated ingredient lookup and pantry CRUD as the first real product workflow. Step 4 added deterministic pantry-to-suggestion generation. Step 5 added pantry-aware recipe-template detail plus a rerunnable starter catalog. Step 6 now adds a grounded server-side AI explanation layer on top of that structured flow.
 
 ## Step 1 goal
 
@@ -39,14 +39,16 @@ Cross-cutting concerns live in `Shared` so the domain modules do not depend on o
 
 ## Explicitly deferred
 
-- AI-driven recommendation logic and nutrition computation
-- Natural-language explanation generation and external recipe retrieval
+- AI-driven recommendation logic beyond the grounded explanation layer
+- external recipe retrieval
 - Moderation workflow engines and admin dashboards
 - Realtime features and notifications delivery
 - Advanced token expiration strategy, MFA, password reset, email verification, and social login
 - Save/bookmark flows, cooked-history tracking, shopping lists, meal planning, grocery workflows, or barcode ingestion
 - Advanced trust scoring, abuse detection, and gamification rules
+- nutrition calculations
+- conversational memory, vectors, or general-purpose AI assistance
 
-## Recommended Step 6
+## Recommended Step 7
 
-Build the template interaction loop next. The backend now supports suggestion generation plus pantry-aware template detail, so the best next step is to add save/bookmark and lightweight “cooked this” interactions that capture what users actually do with those templates.
+Build the template interaction loop next. The backend now supports suggestion generation, pantry-aware template detail, and grounded explanation copy, so the best next step is to add save/bookmark and lightweight “cooked this” interactions that capture what users actually do with those templates.

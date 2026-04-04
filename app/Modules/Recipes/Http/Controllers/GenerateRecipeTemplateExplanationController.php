@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Modules\Recipes\Http\Controllers;
+
+use App\Modules\AI\Application\Exceptions\RecipeExplanationUnavailableException;
+use App\Modules\AI\Application\Services\RecipeTemplateExplanationService;
+use App\Modules\Recipes\Http\Resources\RecipeTemplateExplanationResource;
+use App\Modules\Shared\Http\Controllers\ApiController;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class GenerateRecipeTemplateExplanationController extends ApiController
+{
+    public function __invoke(
+        Request $request,
+        string $recipeTemplate,
+        RecipeTemplateExplanationService $recipeTemplateExplanationService
+    ): JsonResponse {
+        try {
+            $payload = $recipeTemplateExplanationService->generateForUser(
+                user: $request->user(),
+                recipeTemplateId: $recipeTemplate,
+                requestId: (string) ($request->header('X-Request-Id') ?: Str::uuid()),
+            );
+        } catch (RecipeExplanationUnavailableException) {
+            return $this->respond([
+                'message' => 'Unable to generate a recipe explanation right now.',
+                'code' => 'recipe_explanation_unavailable',
+            ], 503);
+        }
+
+        return $this->respond(
+            RecipeTemplateExplanationResource::make($payload)->resolve($request)
+        );
+    }
+}

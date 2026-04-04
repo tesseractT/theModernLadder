@@ -149,10 +149,20 @@ The seeder is intentionally rerunnable and updates existing starter records inst
 - unpublished templates return `404`
 - pantry overlay data is always scoped to the current authenticated user
 
-## Deferred to Step 6
+## Step 6 follow-through
+
+Step 6 adds the explanation endpoint documented in [recipe-template-explanations.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/recipe-template-explanations.md).
+
+That layer:
+
+- stays server-side only
+- grounds prompts in the detail payload and pantry-fit data already produced here
+- validates strict JSON output before Flutter receives it
+- falls back safely when provider output is malformed or out of scope
+
+## Deferred to Step 7
 
 - user save/bookmark or cooked-history actions on templates
-- richer feedback loops from template usage
-- AI explanations
+- richer first-party feedback loops from template usage
 - nutrition calculations
 - community recipe publishing or moderation flows

@@ -59,7 +59,7 @@ return [
         ],
         'ai' => [
             'name' => 'AI',
-            'description' => 'Reserved boundary for later server-side AI orchestration.',
+            'description' => 'Server-side grounded AI orchestration for scoped explanation workflows.',
             'api_routes' => base_path('app/Modules/AI/Routes/api.php'),
         ],
     ],

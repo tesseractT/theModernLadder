@@ -35,6 +35,10 @@ return [
         ],
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+    ],
+
     'ai' => [
         'driver' => env('AI_DRIVER'),
         'timeout' => (int) env('AI_TIMEOUT', 15),

@@ -5,6 +5,14 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
+$prefersRedisThrottle = filter_var(env('API_THROTTLE_REDIS', true), FILTER_VALIDATE_BOOL);
+
+$redisThrottleAvailable = match (env('REDIS_CLIENT', 'phpredis')) {
+    'phpredis' => extension_loaded('redis') && class_exists('Redis'),
+    'predis' => class_exists('Predis\\Client'),
+    default => false,
+};
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -12,9 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+    ->withMiddleware(function (Middleware $middleware) use ($prefersRedisThrottle, $redisThrottleAvailable): void {
         $middleware->throttleApi(
-            redis: filter_var(env('API_THROTTLE_REDIS', true), FILTER_VALIDATE_BOOL),
+            // Fall back to Laravel's standard throttle middleware when the active PHP runtime
+            // cannot actually boot the configured Redis client.
+            redis: $prefersRedisThrottle && $redisThrottleAvailable,
         );
         $middleware->api(prepend: [
             ForceJsonResponse::class,
