@@ -56,6 +56,13 @@ Useful commands:
 - `./dev.sh chrome`
 - `./dev.sh ios`
 
+## Quality gate and launch hardening
+
+- GitHub Actions backend quality gate lives at `.github/workflows/quality.yml`.
+- CI runs `composer lint` and `composer test` on pull requests and pushes.
+- Local verification matches CI: `cp .env.example .env && php artisan key:generate && composer lint && composer test`
+- Launch-hardening notes, env toggles, rollout steps, and rollback notes live in [docs/backend/launch-hardening.md](docs/backend/launch-hardening.md).
+
 ## Implemented so far
 
 - Laravel API bootstrapped in this repository
@@ -65,6 +72,7 @@ Useful commands:
 - Lean core schema for users, profiles, preferences, ingredients, recipes, and moderation foundations
 - Authenticated pantry CRUD, ingredient lookup, and deterministic pantry-to-suggestion generation
 - Pantry-aware recipe-template detail and grounded server-side AI explanations
+- Request correlation IDs on API responses plus tighter throttles on high-risk auth and AI explanation endpoints
 - Versioned API scaffolding with request validation, resources, and feature tests
 - Documentation for Flutter authentication and current backend scope
 

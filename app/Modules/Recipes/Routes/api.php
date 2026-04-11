@@ -1,7 +1,7 @@
 <?php
 
-use App\Modules\Recipes\Http\Controllers\GenerateSuggestionsController;
 use App\Modules\Recipes\Http\Controllers\GenerateRecipeTemplateExplanationController;
+use App\Modules\Recipes\Http\Controllers\GenerateSuggestionsController;
 use App\Modules\Recipes\Http\Controllers\ListRecipeTemplatesController;
 use App\Modules\Recipes\Http\Controllers\ShowRecipeTemplateController;
 use App\Modules\Recipes\Http\Controllers\ShowRecipeTemplateDetailController;
@@ -19,7 +19,8 @@ Route::middleware('auth:sanctum')
     ->name('recipes.templates.')
     ->group(function (): void {
         Route::get('/{recipeTemplate}', ShowRecipeTemplateDetailController::class)->name('show');
-        Route::post('/{recipeTemplate}/explanation', GenerateRecipeTemplateExplanationController::class)
+        Route::middleware('throttle:recipes.explanation')
+            ->post('/{recipeTemplate}/explanation', GenerateRecipeTemplateExplanationController::class)
             ->name('explanation.store');
     });
 

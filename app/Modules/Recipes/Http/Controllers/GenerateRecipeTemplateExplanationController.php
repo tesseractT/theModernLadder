@@ -8,7 +8,6 @@ use App\Modules\Recipes\Http\Resources\RecipeTemplateExplanationResource;
 use App\Modules\Shared\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class GenerateRecipeTemplateExplanationController extends ApiController
 {
@@ -21,7 +20,7 @@ class GenerateRecipeTemplateExplanationController extends ApiController
             $payload = $recipeTemplateExplanationService->generateForUser(
                 user: $request->user(),
                 recipeTemplateId: $recipeTemplate,
-                requestId: (string) ($request->header('X-Request-Id') ?: Str::uuid()),
+                requestId: (string) ($request->attributes->get('request_id') ?: $request->header('X-Request-Id')),
             );
         } catch (RecipeExplanationUnavailableException) {
             return $this->respond([

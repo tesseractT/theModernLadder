@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Shared\Http\Middleware\AssignRequestId;
 use App\Modules\Shared\Http\Middleware\ForceJsonResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             redis: $prefersRedisThrottle && $redisThrottleAvailable,
         );
         $middleware->api(prepend: [
+            AssignRequestId::class,
             ForceJsonResponse::class,
         ]);
     })

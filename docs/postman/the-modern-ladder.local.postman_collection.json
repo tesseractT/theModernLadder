@@ -1,0 +1,701 @@
+{
+  "info": {
+    "_postman_id": "cba4c52e-cd65-4a12-8ff6-6989215172f4",
+    "name": "The Modern Ladder Local API",
+    "description": "Ready-to-import Postman collection for the local Laravel API. Login and register requests save the bearer token into the collection variable named token. Ingredient, pantry item, and recipe template requests also save useful IDs for follow-up calls.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "pairly@example.com",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "Password123!",
+      "type": "string"
+    },
+    {
+      "key": "device_name",
+      "value": "postman-local",
+      "type": "string"
+    },
+    {
+      "key": "per_page",
+      "value": "15",
+      "type": "string"
+    },
+    {
+      "key": "ingredient_search",
+      "value": "pineapple",
+      "type": "string"
+    },
+    {
+      "key": "ingredient_slug",
+      "value": "pineapple",
+      "type": "string"
+    },
+    {
+      "key": "ingredient_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pantry_item_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recipe_template_slug",
+      "value": "pineapple-smoothie",
+      "type": "string"
+    },
+    {
+      "key": "recipe_template_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "API Meta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/meta",
+            "description": "Basic API metadata and enabled module list."
+          },
+          "response": []
+        },
+        {
+          "name": "List Ingredients",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.data && json.data.length > 0) {",
+                  "  if (json.data[0].id) pm.collectionVariables.set(\"ingredient_id\", json.data[0].id);",
+                  "  if (json.data[0].slug) pm.collectionVariables.set(\"ingredient_slug\", json.data[0].slug);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/ingredients?search={{ingredient_search}}&per_page={{per_page}}",
+            "description": "Public ingredient listing. Saves the first ingredient id and slug into collection variables."
+          },
+          "response": []
+        },
+        {
+          "name": "Show Ingredient",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/ingredients/{{ingredient_slug}}",
+            "description": "Fetch a single published ingredient by slug."
+          },
+          "response": []
+        },
+        {
+          "name": "List Recipe Templates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.data && json.data.length > 0) {",
+                  "  if (json.data[0].id) pm.collectionVariables.set(\"recipe_template_id\", json.data[0].id);",
+                  "  if (json.data[0].slug) pm.collectionVariables.set(\"recipe_template_slug\", json.data[0].slug);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/recipe-templates?search={{ingredient_search}}&per_page={{per_page}}",
+            "description": "Public recipe template listing. Saves the first template id and slug into collection variables."
+          },
+          "response": []
+        },
+        {
+          "name": "Show Recipe Template",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json) {",
+                  "  if (json.id) pm.collectionVariables.set(\"recipe_template_id\", json.id);",
+                  "  if (json.slug) pm.collectionVariables.set(\"recipe_template_slug\", json.slug);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/recipe-templates/{{recipe_template_slug}}",
+            "description": "Fetch a single published recipe template by slug."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"email\", \"pairly+\" + Date.now() + \"@example.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.token) pm.collectionVariables.set(\"token\", json.token);",
+                  "if (json && json.user && json.user.id) pm.collectionVariables.set(\"user_id\", json.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Casey Morgan\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"password_confirmation\": \"{{password}}\",\n  \"device_name\": \"{{device_name}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{base_url}}/auth/register",
+            "description": "Creates a fresh user and saves the bearer token into the collection variable named token."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.token) pm.collectionVariables.set(\"token\", json.token);",
+                  "if (json && json.user && json.user.id) pm.collectionVariables.set(\"user_id\", json.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"device_name\": \"{{device_name}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{base_url}}/auth/login",
+            "description": "Logs into an existing account and refreshes the saved bearer token."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{token}}",
+                "type": "string"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) pm.collectionVariables.unset(\"token\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/auth/logout",
+            "description": "Revokes the current Sanctum token and clears the saved Postman token variable."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/me",
+            "description": "Returns the authenticated account profile and food preferences."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"display_name\": \"Updated Name\",\n  \"bio\": \"Home cook and curious eater.\",\n  \"locale\": \"en-GB\",\n  \"timezone\": \"Europe/London\",\n  \"country_code\": \"GB\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{base_url}}/me/profile",
+            "description": "Updates the authenticated profile."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Preferences",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dietary_patterns\": [\"vegetarian\", \"halal\"],\n  \"preferred_cuisines\": [\"Levantine\", \"Japanese\"],\n  \"disliked_ingredients\": [\"anchovy\", \"olives\"],\n  \"measurement_system\": \"imperial\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{base_url}}/me/preferences",
+            "description": "Updates the authenticated user's food preferences."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ingredients",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Search Ingredients",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.data && json.data.length > 0) {",
+                  "  if (json.data[0].id) pm.collectionVariables.set(\"ingredient_id\", json.data[0].id);",
+                  "  if (json.data[0].slug) pm.collectionVariables.set(\"ingredient_slug\", json.data[0].slug);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/ingredients/search?q={{ingredient_search}}&limit=10",
+            "description": "Authenticated ingredient lookup for pantry entry. Saves the first result id and slug."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pantry",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "List Pantry Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.data && json.data.length > 0 && json.data[0].id) {",
+                  "  pm.collectionVariables.set(\"pantry_item_id\", json.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/me/pantry?per_page={{per_page}}",
+            "description": "Lists the authenticated user's active pantry items."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Pantry Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.pantry_item && json.pantry_item.id) pm.collectionVariables.set(\"pantry_item_id\", json.pantry_item.id);",
+                  "if (json && json.pantry_item && json.pantry_item.ingredient && json.pantry_item.ingredient.id) pm.collectionVariables.set(\"ingredient_id\", json.pantry_item.ingredient.id);",
+                  "if (json && json.pantry_item && json.pantry_item.ingredient && json.pantry_item.ingredient.slug) pm.collectionVariables.set(\"ingredient_slug\", json.pantry_item.ingredient.slug);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ingredient_id\": \"{{ingredient_id}}\",\n  \"quantity\": 2.5,\n  \"unit\": \"cups\",\n  \"note\": \"For smoothies\",\n  \"expires_on\": \"2026-04-15\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{base_url}}/me/pantry",
+            "description": "Adds an ingredient to pantry. Run ingredient search first so ingredient_id is filled."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Pantry Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3,\n  \"unit\": \"slices\",\n  \"note\": \"Cut and ready\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{base_url}}/me/pantry/{{pantry_item_id}}",
+            "description": "Updates the pantry item saved in pantry_item_id."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Pantry Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/me/pantry/{{pantry_item_id}}",
+            "description": "Deletes the pantry item saved in pantry_item_id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Recipes",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Generate Suggestions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"goal\": \"drink\",\n  \"limit\": 5,\n  \"include_substitutions\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{base_url}}/me/suggestions",
+            "description": "Generates pantry-aware recipe suggestions for the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Recipe Template Detail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.template && json.template.id) pm.collectionVariables.set(\"recipe_template_id\", json.template.id);",
+                  "if (json && json.template && json.template.slug) pm.collectionVariables.set(\"recipe_template_slug\", json.template.slug);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/recipes/templates/{{recipe_template_id}}",
+            "description": "Authenticated recipe detail endpoint. Run the public recipe template list first so recipe_template_id is populated."
+          },
+          "response": []
+        },
+        {
+          "name": "Recipe Template Explanation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/recipes/templates/{{recipe_template_id}}/explanation",
+            "description": "Generates a grounded explanation for the saved recipe_template_id."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

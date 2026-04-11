@@ -12,6 +12,8 @@ use App\Modules\Users\Domain\Models\User;
 use App\Modules\Users\Domain\Models\UserPreference;
 use Database\Seeders\StarterRecipeTemplateCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -66,6 +68,45 @@ class RecipeTemplateExplanationApiTest extends TestCase
             ->assertJsonPath('explanation.grounding.template.slug', 'pineapple-smoothie')
             ->assertJsonPath('explanation.grounding.pantry_fit.required_missing', 1)
             ->assertJsonPath('explanation.warnings_or_limits.1', 'Not medical, allergy-certainty, diagnosis, treatment, or disease-management advice.');
+    }
+
+    public function test_recipe_template_explanation_preserves_a_valid_caller_supplied_request_id(): void
+    {
+        $this->seed(StarterRecipeTemplateCatalogSeeder::class);
+
+        $user = User::factory()->create();
+        $template = RecipeTemplate::query()->where('slug', 'pineapple-smoothie')->firstOrFail();
+        $requestId = 'client-request-123';
+
+        $this->pantryItemForTemplateIngredient($user, $template, 'pineapple');
+        $this->pantryItemForTemplateIngredient($user, $template, 'yogurt');
+        $this->pantryItemBySlug($user, 'mango');
+
+        Log::spy();
+
+        $this->mock(RecipeExplanationProvider::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('generate')
+                ->once()
+                ->andReturn(new RecipeExplanationProviderResponse(
+                    payload: $this->validProviderPayload(),
+                    provider: 'fake',
+                    model: 'fake-model',
+                    latencyMs: 42,
+                ));
+        });
+
+        Sanctum::actingAs($user);
+
+        $this->withHeaders([
+            'X-Request-Id' => $requestId,
+        ])->postJson("/api/v1/recipes/templates/{$template->id}/explanation")
+            ->assertOk()
+            ->assertHeader('X-Request-Id', $requestId);
+
+        Log::shouldHaveReceived('info')
+            ->withArgs(fn (string $message, array $context): bool => $message === 'recipe_template.explanation.generated'
+                && ($context['request_id'] ?? null) === $requestId)
+            ->once();
     }
 
     public function test_prompt_payload_is_grounded_in_structured_data_and_excludes_untrusted_user_text(): void
@@ -234,6 +275,40 @@ class RecipeTemplateExplanationApiTest extends TestCase
         $this->assertStringNotContainsString('OpenAI 401', json_encode($response->json(), JSON_THROW_ON_ERROR));
     }
 
+    public function test_recipe_template_explanation_route_is_throttled_with_a_safe_json_response(): void
+    {
+        config()->set('api.route_rate_limits.recipes.explanation.per_minute', 1);
+
+        $this->seed(StarterRecipeTemplateCatalogSeeder::class);
+
+        $user = User::factory()->create();
+        $template = RecipeTemplate::query()->where('slug', 'pineapple-smoothie')->firstOrFail();
+
+        $this->pantryItemForTemplateIngredient($user, $template, 'pineapple');
+        $this->pantryItemForTemplateIngredient($user, $template, 'yogurt');
+        $this->pantryItemBySlug($user, 'mango');
+
+        $this->mock(RecipeExplanationProvider::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('generate')
+                ->once()
+                ->andReturn(new RecipeExplanationProviderResponse(
+                    payload: $this->validProviderPayload(),
+                    provider: 'fake',
+                    model: 'fake-model',
+                    latencyMs: 42,
+                ));
+        });
+
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/v1/recipes/templates/{$template->id}/explanation")
+            ->assertOk();
+
+        $response = $this->postJson("/api/v1/recipes/templates/{$template->id}/explanation");
+
+        $this->assertTooManyRequestsResponse($response);
+    }
+
     protected function validProviderPayload(array $overrides = []): array
     {
         return array_replace_recursive([
@@ -312,5 +387,17 @@ class RecipeTemplateExplanationApiTest extends TestCase
             'ingredient_id' => $ingredientId,
             'entered_name' => 'Seeded Ingredient',
         ]);
+    }
+
+    protected function assertTooManyRequestsResponse(TestResponse $response): void
+    {
+        $response
+            ->assertStatus(429)
+            ->assertHeader('Retry-After')
+            ->assertHeader('X-Request-Id')
+            ->assertJsonPath('code', 'too_many_requests')
+            ->assertJsonPath('message', 'Too many requests. Please try again later.');
+
+        $this->assertGreaterThan(0, (int) $response->json('retry_after_seconds'));
     }
 }

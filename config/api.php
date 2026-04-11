@@ -5,4 +5,22 @@ return [
     'per_page' => (int) env('API_PER_PAGE', 15),
     'max_per_page' => (int) env('API_MAX_PER_PAGE', 50),
     'rate_limit_per_minute' => (int) env('API_RATE_LIMIT_PER_MINUTE', 60),
+    'route_rate_limits' => [
+        'auth' => [
+            'register' => [
+                'per_minute' => (int) env('API_AUTH_REGISTER_RATE_LIMIT_PER_MINUTE', 5),
+            ],
+            'login' => [
+                'per_minute' => (int) env('API_AUTH_LOGIN_RATE_LIMIT_PER_MINUTE', 10),
+            ],
+            'logout' => [
+                'per_minute' => (int) env('API_AUTH_LOGOUT_RATE_LIMIT_PER_MINUTE', 30),
+            ],
+        ],
+        'recipes' => [
+            'explanation' => [
+                'per_minute' => (int) env('API_RECIPE_EXPLANATION_RATE_LIMIT_PER_MINUTE', 5),
+            ],
+        ],
+    ],
 ];
