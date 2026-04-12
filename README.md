@@ -59,8 +59,10 @@ Useful commands:
 ## Quality gate and launch hardening
 
 - GitHub Actions backend quality gate lives at `.github/workflows/quality.yml`.
-- CI runs `composer lint` and `composer test` on pull requests and pushes.
-- Local verification matches CI: `cp .env.example .env && php artisan key:generate && composer lint && composer test`
+- CI runs Composer metadata validation, Pint in test mode, the Laravel test suite, and a Composer dependency audit on pull requests targeting `main` plus pushes to `main`.
+- The backend workflow intentionally skips pure `apps/flutter_app/**` changes so it stays focused on the live Laravel surface.
+- Local verification matches CI: `cp .env.example .env && php artisan key:generate && composer run quality`
+- The backend test suite stays lightweight in CI because PHPUnit uses in-memory SQLite plus array/sync drivers, so no Postgres or Redis service containers are required.
 - Launch-hardening notes, env toggles, rollout steps, and rollback notes live in [docs/backend/launch-hardening.md](docs/backend/launch-hardening.md).
 - Repo-specific security baseline, threat model notes, and secret-handling expectations live in [docs/backend/security.md](docs/backend/security.md).
 

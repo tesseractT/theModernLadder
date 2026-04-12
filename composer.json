@@ -44,6 +44,9 @@
         "queue:work": [
             "@php artisan queue:work --queue=default --tries=3 --backoff=5"
         ],
+        "quality:validate": [
+            "@composer validate --strict --no-check-publish"
+        ],
         "lint": [
             "vendor/bin/pint --test"
         ],
@@ -53,6 +56,15 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "quality:audit": [
+            "@composer audit --locked --no-dev"
+        ],
+        "quality": [
+            "@quality:validate",
+            "@lint",
+            "@test",
+            "@quality:audit"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

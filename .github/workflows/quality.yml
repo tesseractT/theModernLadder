@@ -2,11 +2,30 @@ name: Backend Quality
 
 on:
   pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'apps/flutter_app/**'
   push:
+    branches:
+      - main
+    paths-ignore:
+      - 'apps/flutter_app/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-quality-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
+    name: Validate, lint, test, and audit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COMPOSER_NO_INTERACTION: 1
 
     steps:
       - name: Check out repository
@@ -20,11 +39,26 @@ jobs:
           extensions: mbstring, pdo_sqlite, sqlite3
           tools: composer:v2
 
-      - name: Prepare environment
-        run: cp .env.example .env
+      - name: Resolve Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-composer-
+
+      - name: Validate Composer metadata
+        run: composer run quality:validate
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
+        run: composer install --no-progress --prefer-dist --ansi
+
+      - name: Prepare environment
+        run: cp .env.example .env
 
       - name: Generate application key
         run: php artisan key:generate --ansi
@@ -34,3 +68,6 @@ jobs:
 
       - name: Run tests
         run: composer test
+
+      - name: Run dependency audit
+        run: composer run quality:audit

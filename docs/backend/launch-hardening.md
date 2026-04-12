@@ -19,17 +19,26 @@ The backend workflow lives at `.github/workflows/quality.yml`.
 
 It runs:
 
+- `composer run quality:validate`
 - `composer lint`
 - `composer test`
+- `composer run quality:audit`
 
 Local verification should match CI:
 
 ```bash
 cp .env.example .env
 php artisan key:generate
-composer lint
-composer test
+composer run quality
 ```
+
+Scope and behavior:
+
+- it runs for pull requests targeting `main` and pushes to `main`
+- it skips pure `apps/flutter_app/**` changes so the workflow stays backend-specific
+- Composer downloads are cached for faster repeat runs
+- stale runs on the same branch or pull request are canceled automatically
+- no Postgres or Redis service containers are required because the backend test suite uses in-memory SQLite and array/sync drivers in `phpunit.xml`
 
 ## Endpoint-specific throttles
 
@@ -93,7 +102,9 @@ Migrations:
 
 Rollout:
 
-- deploy the code changes
+- merge the workflow and composer/doc updates to `main`
+- ensure GitHub Actions is enabled for the repository
+- set the `Backend Quality` workflow as a required status check for pull requests if branch protection is being used
 - keep the default limiter env values or override them per environment
 - verify `GET /api/v1/meta` returns `X-Request-Id`
 - verify `GET /api/v1/meta` also returns `X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer`
@@ -101,10 +112,11 @@ Rollout:
 - verify repeated auth or explanation calls return the safe `429` JSON shape
 - verify `security.audit` entries appear for register, login, logout, and logout-all without raw bearer tokens
 - ensure reverse proxies do not strip `X-Request-Id`
+- confirm the workflow reports separate validate, lint, test, and audit steps in GitHub
 
 Rollback:
 
-- revert the code changes, or temporarily raise the new per-route limiter env values
+- revert the workflow, composer script, and doc changes if this CI baseline must be removed
 - remove the workflow if CI must be rolled back with the code
 - remove the new API security-header middleware and audit-log calls if this prompt must be fully rolled back
 - redeploy
