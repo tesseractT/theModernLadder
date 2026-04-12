@@ -2,6 +2,7 @@
 
 namespace App\Modules\Users\Http\Requests;
 
+use App\Modules\Users\Application\DTO\UpdateProfileData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 
@@ -56,14 +57,16 @@ class UpdateProfileRequest extends FormRequest
         ];
     }
 
-    public function profileAttributes(): array
+    public function payload(): UpdateProfileData
     {
-        return $this->safe()->only([
-            'display_name',
-            'bio',
-            'locale',
-            'timezone',
-            'country_code',
-        ]);
+        return UpdateProfileData::fromValidated(
+            $this->safe()->only([
+                'display_name',
+                'bio',
+                'locale',
+                'timezone',
+                'country_code',
+            ])
+        );
     }
 }

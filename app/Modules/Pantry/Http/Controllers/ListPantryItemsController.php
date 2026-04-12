@@ -3,6 +3,7 @@
 namespace App\Modules\Pantry\Http\Controllers;
 
 use App\Modules\Pantry\Application\Services\PantryItemService;
+use App\Modules\Pantry\Domain\Models\PantryItem;
 use App\Modules\Pantry\Http\Requests\ListPantryItemsRequest;
 use App\Modules\Pantry\Http\Resources\PantryItemResource;
 use App\Modules\Shared\Http\Controllers\ApiController;
@@ -14,6 +15,8 @@ class ListPantryItemsController extends ApiController
         ListPantryItemsRequest $request,
         PantryItemService $pantryItemService
     ): AnonymousResourceCollection {
+        $this->authorize('viewAny', PantryItem::class);
+
         $pantryItems = $pantryItemService->paginateForUser(
             $request->user(),
             $request->perPage()

@@ -78,6 +78,35 @@ class PantryApiTest extends TestCase
         ]);
     }
 
+    public function test_store_pantry_item_normalizes_trimmed_input_before_it_reaches_the_service_boundary(): void
+    {
+        $user = User::factory()->create();
+        $ingredient = Ingredient::factory()->create([
+            'name' => 'Pineapple',
+            'slug' => 'pineapple',
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/me/pantry', [
+            'ingredient_id' => " {$ingredient->id} ",
+            'quantity' => '2.5',
+            'unit' => ' cups ',
+            'note' => '  For smoothies  ',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('pantry_item.unit', 'cups')
+            ->assertJsonPath('pantry_item.note', 'For smoothies')
+            ->assertJsonPath('pantry_item.quantity', 2.5);
+
+        $this->assertDatabaseHas('pantry_items', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+            'unit' => 'cups',
+            'note' => 'For smoothies',
+        ]);
+    }
+
     public function test_duplicate_add_returns_a_validation_error(): void
     {
         $user = User::factory()->create();

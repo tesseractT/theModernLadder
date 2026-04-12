@@ -2,6 +2,7 @@
 
 namespace App\Modules\Users\Http\Requests;
 
+use App\Modules\Users\Application\DTO\UpdateFoodPreferencesData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -83,13 +84,15 @@ class UpdatePreferencesRequest extends FormRequest
         ];
     }
 
-    public function preferenceAttributes(): array
+    public function payload(): UpdateFoodPreferencesData
     {
-        return $this->safe()->only([
-            'dietary_patterns',
-            'preferred_cuisines',
-            'disliked_ingredients',
-            'measurement_system',
-        ]);
+        return UpdateFoodPreferencesData::fromValidated(
+            $this->safe()->only([
+                'dietary_patterns',
+                'preferred_cuisines',
+                'disliked_ingredients',
+                'measurement_system',
+            ])
+        );
     }
 }

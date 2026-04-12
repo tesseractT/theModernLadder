@@ -12,6 +12,10 @@ return [
             ],
             'login' => [
                 'per_minute' => (int) env('API_AUTH_LOGIN_RATE_LIMIT_PER_MINUTE', 10),
+                'credential_lockout' => [
+                    'max_attempts' => (int) env('API_AUTH_LOGIN_CREDENTIAL_MAX_ATTEMPTS', 5),
+                    'decay_seconds' => (int) env('API_AUTH_LOGIN_CREDENTIAL_DECAY_SECONDS', 60),
+                ],
             ],
             'logout' => [
                 'per_minute' => (int) env('API_AUTH_LOGOUT_RATE_LIMIT_PER_MINUTE', 30),

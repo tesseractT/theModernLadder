@@ -3,6 +3,8 @@
 namespace App\Modules\Pantry\Application\Services;
 
 use App\Modules\Ingredients\Domain\Models\Ingredient;
+use App\Modules\Pantry\Application\DTO\StorePantryItemData;
+use App\Modules\Pantry\Application\DTO\UpdatePantryItemData;
 use App\Modules\Pantry\Domain\Models\PantryItem;
 use App\Modules\Users\Domain\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -21,43 +23,41 @@ class PantryItemService
             ->withQueryString();
     }
 
-    public function createForUser(User $user, Ingredient $ingredient, array $attributes): PantryItem
+    public function createForUser(User $user, StorePantryItemData $payload): PantryItem
     {
+        $ingredient = $this->resolveIngredient($payload->ingredientId);
+
         $this->ensureNotDuplicated($user, $ingredient->id);
 
         return PantryItem::query()->create([
             'user_id' => $user->id,
             'ingredient_id' => $ingredient->id,
             'entered_name' => $ingredient->name,
-            'quantity' => $attributes['quantity'] ?? null,
-            'unit' => $attributes['unit'] ?? null,
-            'note' => $attributes['note'] ?? null,
-            'expires_on' => $attributes['expires_on'] ?? null,
+            'quantity' => $payload->quantity,
+            'unit' => $payload->unit,
+            'note' => $payload->note,
+            'expires_on' => $payload->expiresOn,
         ])->load('ingredient');
     }
 
-    public function updateForUser(User $user, string $pantryItemId, array $attributes): PantryItem
+    public function update(PantryItem $pantryItem, UpdatePantryItemData $payload): PantryItem
     {
-        $pantryItem = $this->findForUser($user, $pantryItemId);
-
-        $pantryItem->fill($attributes);
+        $pantryItem->fill($payload->attributes());
         $pantryItem->save();
 
         return $pantryItem->fresh(['ingredient']);
     }
 
-    public function deleteForUser(User $user, string $pantryItemId): void
+    public function delete(PantryItem $pantryItem): void
     {
-        $this->findForUser($user, $pantryItemId)->delete();
+        $pantryItem->delete();
     }
 
-    public function findForUser(User $user, string $pantryItemId): PantryItem
+    protected function resolveIngredient(string $ingredientId): Ingredient
     {
-        return PantryItem::query()
-            ->ownedBy($user)
-            ->active()
-            ->with('ingredient')
-            ->findOrFail($pantryItemId);
+        return Ingredient::query()
+            ->published()
+            ->findOrFail($ingredientId);
     }
 
     protected function ensureNotDuplicated(User $user, string $ingredientId): void

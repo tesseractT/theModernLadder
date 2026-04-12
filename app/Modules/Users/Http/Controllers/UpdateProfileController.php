@@ -12,9 +12,11 @@ class UpdateProfileController extends ApiController
 {
     public function __invoke(UpdateProfileRequest $request, AccountService $accountService): JsonResponse
     {
+        $this->authorize('update', $request->user());
+
         $user = $accountService->updateProfile(
             $request->user(),
-            $request->profileAttributes()
+            $request->payload()
         );
 
         return $this->respond([

@@ -6,6 +6,8 @@ use App\Modules\Ingredients\Domain\Models\Ingredient;
 use App\Modules\Ingredients\Domain\Models\Pairing;
 use App\Modules\Ingredients\Domain\Models\Substitution;
 use App\Modules\Pantry\Domain\Models\PantryItem;
+use App\Modules\Recipes\Application\DTO\GenerateSuggestionsData;
+use App\Modules\Recipes\Application\DTO\GenerateSuggestionsResult;
 use App\Modules\Recipes\Domain\Models\RecipeTemplate;
 use App\Modules\Recipes\Domain\Models\RecipeTemplateIngredient;
 use App\Modules\Users\Domain\Models\User;
@@ -14,13 +16,12 @@ use Illuminate\Support\Str;
 
 class RecipeSuggestionService
 {
-    public function generateForUser(User $user, array $filters): array
+    public function generateForUser(User $user, GenerateSuggestionsData $input): GenerateSuggestionsResult
     {
-        $goal = $filters['goal'] ?? null;
-        $includeSubstitutions = (bool) ($filters['include_substitutions']
-            ?? config('suggestions.defaults.include_substitutions', true));
-        $limit = (int) ($filters['limit'] ?? config('suggestions.defaults.limit', 5));
-        $selectedPantryItemIds = collect($filters['pantry_item_ids'] ?? [])
+        $goal = $input->goal;
+        $includeSubstitutions = $input->includeSubstitutions;
+        $limit = $input->limit;
+        $selectedPantryItemIds = collect($input->pantryItemIds)
             ->filter()
             ->values();
 
@@ -37,22 +38,13 @@ class RecipeSuggestionService
             ->filter(fn (PantryItem $pantryItem) => $pantryItem->ingredient !== null)
             ->values();
 
-        $response = [
-            'request' => [
-                'goal' => $goal,
-                'limit' => $limit,
-                'include_substitutions' => $includeSubstitutions,
-                'pantry_item_ids' => $selectedPantryItemIds->all(),
-            ],
-            'pantry_items' => $pantryItems,
-            'candidates' => [],
-            'message' => null,
-        ];
-
         if ($pantryItems->isEmpty()) {
-            $response['message'] = 'Add pantry ingredients to get suggestion candidates.';
-
-            return $response;
+            return new GenerateSuggestionsResult(
+                input: $input,
+                pantryItems: $pantryItems,
+                candidates: [],
+                message: 'Add pantry ingredients to get suggestion candidates.',
+            );
         }
 
         $pantryIngredientIds = $pantryItems
@@ -81,9 +73,12 @@ class RecipeSuggestionService
             ->values();
 
         if ($templates->isEmpty()) {
-            $response['message'] = 'No suggestion templates are currently available for this pantry selection.';
-
-            return $response;
+            return new GenerateSuggestionsResult(
+                input: $input,
+                pantryItems: $pantryItems,
+                candidates: [],
+                message: 'No suggestion templates are currently available for this pantry selection.',
+            );
         }
 
         $templateIngredientIds = $templates
@@ -132,13 +127,14 @@ class RecipeSuggestionService
             ->values()
             ->all();
 
-        $response['candidates'] = $candidates;
-
-        if ($candidates === []) {
-            $response['message'] = 'No suggestion candidates matched the selected pantry ingredients and preferences.';
-        }
-
-        return $response;
+        return new GenerateSuggestionsResult(
+            input: $input,
+            pantryItems: $pantryItems,
+            candidates: $candidates,
+            message: $candidates === []
+                ? 'No suggestion candidates matched the selected pantry ingredients and preferences.'
+                : null,
+        );
     }
 
     protected function buildCandidate(

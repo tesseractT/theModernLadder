@@ -6,6 +6,13 @@ Prompt 1 adds three immediate launch-hardening foundations without changing the 
 - named endpoint throttles for high-risk auth and AI explanation routes
 - API-wide request correlation with `X-Request-Id`
 
+Later prompts add a small security baseline on top of those controls:
+
+- reusable `security.audit` logging for live token lifecycle events
+- API-safe response headers for content sniffing, referrer handling, and sensitive-response caching
+- redaction of secret-like AI/provider log context before it reaches application logs
+- clearer environment and secret-separation guidance in the repo docs
+
 ## CI quality gate
 
 The backend workflow lives at `.github/workflows/quality.yml`.
@@ -67,6 +74,17 @@ Behavior:
 
 For public traffic, upstream proxies and edge services should preserve `X-Request-Id` so logs can be correlated across layers.
 
+## Security baseline follow-through
+
+The current repo-specific security baseline is documented in [docs/backend/security.md](security.md).
+
+Highlights:
+
+- auth endpoints and authenticated API responses now send `Cache-Control: no-store, private`
+- all API responses now send `X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer`
+- token issue and revoke flows now emit `security.audit` log events without logging raw tokens
+- AI/provider failure logs redact secret-like context keys before writing log entries
+
 ## Migration, rollout, and rollback
 
 Migrations:
@@ -78,13 +96,17 @@ Rollout:
 - deploy the code changes
 - keep the default limiter env values or override them per environment
 - verify `GET /api/v1/meta` returns `X-Request-Id`
+- verify `GET /api/v1/meta` also returns `X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer`
+- verify auth and authenticated API responses return `Cache-Control: no-store, private`
 - verify repeated auth or explanation calls return the safe `429` JSON shape
+- verify `security.audit` entries appear for register, login, logout, and logout-all without raw bearer tokens
 - ensure reverse proxies do not strip `X-Request-Id`
 
 Rollback:
 
 - revert the code changes, or temporarily raise the new per-route limiter env values
 - remove the workflow if CI must be rolled back with the code
+- remove the new API security-header middleware and audit-log calls if this prompt must be fully rolled back
 - redeploy
 
 No data rollback is required because this prompt does not change schema or persisted records.
@@ -97,3 +119,4 @@ Still unresolved for public launch:
 - internal moderation and admin tooling for future public contribution surfaces
 - centralized alerting, log shipping, and queue failure visibility
 - AI cost controls beyond per-route throttling, such as caching and provider budget guardrails
+- future upload handling, which still needs validation, storage, and access-boundary hardening when that surface is introduced

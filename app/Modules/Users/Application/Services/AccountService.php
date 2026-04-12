@@ -2,6 +2,8 @@
 
 namespace App\Modules\Users\Application\Services;
 
+use App\Modules\Users\Application\DTO\UpdateFoodPreferencesData;
+use App\Modules\Users\Application\DTO\UpdateProfileData;
 use App\Modules\Users\Domain\Models\Profile;
 use App\Modules\Users\Domain\Models\User;
 use App\Modules\Users\Domain\Models\UserPreference;
@@ -24,22 +26,22 @@ class AccountService
         return $user->fresh(['profile', 'foodPreference']);
     }
 
-    public function updateProfile(User $user, array $attributes): User
+    public function updateProfile(User $user, UpdateProfileData $payload): User
     {
         $profile = $this->ensureProfile($user);
 
-        $profile->fill($attributes);
+        $profile->fill($payload->attributes());
         $profile->save();
 
         return $this->load($user);
     }
 
-    public function updateFoodPreferences(User $user, array $attributes): User
+    public function updateFoodPreferences(User $user, UpdateFoodPreferencesData $payload): User
     {
         $preference = $this->ensureFoodPreferences($user);
 
         $preference->forceFill([
-            'value' => array_replace($user->resolvedFoodPreferences(), $attributes),
+            'value' => array_replace($user->resolvedFoodPreferences(), $payload->attributes()),
         ])->save();
 
         return $this->load($user);

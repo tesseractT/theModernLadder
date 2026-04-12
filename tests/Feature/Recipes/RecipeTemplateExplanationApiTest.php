@@ -275,6 +275,53 @@ class RecipeTemplateExplanationApiTest extends TestCase
         $this->assertStringNotContainsString('OpenAI 401', json_encode($response->json(), JSON_THROW_ON_ERROR));
     }
 
+    public function test_provider_failure_logs_redact_secret_like_context_values(): void
+    {
+        $this->seed(StarterRecipeTemplateCatalogSeeder::class);
+
+        $user = User::factory()->create();
+        $template = RecipeTemplate::query()->where('slug', 'pineapple-smoothie')->firstOrFail();
+
+        $this->pantryItemForTemplateIngredient($user, $template, 'pineapple');
+        $this->pantryItemForTemplateIngredient($user, $template, 'yogurt');
+
+        Log::spy();
+
+        $this->mock(RecipeExplanationProvider::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('generate')
+                ->once()
+                ->andThrow(new RecipeExplanationProviderException(
+                    'Provider failure.',
+                    [
+                        'api_key' => 'sk-secret',
+                        'authorization' => 'Bearer secret-token',
+                        'token_id' => 'token-record-123',
+                        'nested' => [
+                            'refresh_token' => 'refresh-secret',
+                            'safe' => 'keep-me',
+                        ],
+                    ]
+                ));
+        });
+
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/v1/recipes/templates/{$template->id}/explanation")
+            ->assertOk()
+            ->assertJsonPath('source', 'fallback');
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(function (string $message, array $context): bool {
+                return $message === 'recipe_template.explanation.failed'
+                    && ($context['context']['api_key'] ?? null) === '[REDACTED]'
+                    && ($context['context']['authorization'] ?? null) === '[REDACTED]'
+                    && ($context['context']['token_id'] ?? null) === 'token-record-123'
+                    && ($context['context']['nested']['refresh_token'] ?? null) === '[REDACTED]'
+                    && ($context['context']['nested']['safe'] ?? null) === 'keep-me';
+            })
+            ->once();
+    }
+
     public function test_recipe_template_explanation_route_is_throttled_with_a_safe_json_response(): void
     {
         config()->set('api.route_rate_limits.recipes.explanation.per_minute', 1);

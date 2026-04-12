@@ -12,6 +12,8 @@ class ShowCurrentUserController extends ApiController
 {
     public function __invoke(Request $request, AccountService $accountService): JsonResponse
     {
+        $this->authorize('view', $request->user());
+
         $user = $accountService->load($request->user());
 
         return $this->respond([

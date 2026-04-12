@@ -2,8 +2,8 @@
 
 namespace App\Modules\Pantry\Http\Controllers;
 
-use App\Modules\Ingredients\Domain\Models\Ingredient;
 use App\Modules\Pantry\Application\Services\PantryItemService;
+use App\Modules\Pantry\Domain\Models\PantryItem;
 use App\Modules\Pantry\Http\Requests\StorePantryItemRequest;
 use App\Modules\Pantry\Http\Resources\PantryItemResource;
 use App\Modules\Shared\Http\Controllers\ApiController;
@@ -15,14 +15,11 @@ class StorePantryItemController extends ApiController
         StorePantryItemRequest $request,
         PantryItemService $pantryItemService
     ): JsonResponse {
-        $ingredient = Ingredient::query()
-            ->published()
-            ->findOrFail($request->string('ingredient_id')->toString());
+        $this->authorize('create', PantryItem::class);
 
         $pantryItem = $pantryItemService->createForUser(
             $request->user(),
-            $ingredient,
-            $request->pantryAttributes()
+            $request->payload()
         );
 
         return $this->respond([

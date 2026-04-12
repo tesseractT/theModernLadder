@@ -19,7 +19,7 @@ Production-grade backend foundation for a mobile-first food discovery platform b
 
 ## Module structure
 
-See [docs/backend/architecture.md](docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](docs/backend/authentication.md) for Flutter auth usage, [docs/backend/pantry.md](docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](docs/backend/suggestions.md) for deterministic suggestions, [docs/backend/recipe-templates.md](docs/backend/recipe-templates.md) for template detail follow-through, and [docs/backend/recipe-template-explanations.md](docs/backend/recipe-template-explanations.md) for the grounded AI explanation layer.
+See [docs/backend/architecture.md](docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](docs/backend/authentication.md) for Flutter auth usage, [docs/backend/security.md](docs/backend/security.md) for the current security baseline and threat model, [docs/backend/pantry.md](docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](docs/backend/suggestions.md) for deterministic suggestions, [docs/backend/recipe-templates.md](docs/backend/recipe-templates.md) for template detail follow-through, and [docs/backend/recipe-template-explanations.md](docs/backend/recipe-template-explanations.md) for the grounded AI explanation layer.
 
 Core modules:
 
@@ -62,6 +62,7 @@ Useful commands:
 - CI runs `composer lint` and `composer test` on pull requests and pushes.
 - Local verification matches CI: `cp .env.example .env && php artisan key:generate && composer lint && composer test`
 - Launch-hardening notes, env toggles, rollout steps, and rollback notes live in [docs/backend/launch-hardening.md](docs/backend/launch-hardening.md).
+- Repo-specific security baseline, threat model notes, and secret-handling expectations live in [docs/backend/security.md](docs/backend/security.md).
 
 ## Implemented so far
 
@@ -81,6 +82,7 @@ Useful commands:
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/logout`
+- `POST /api/v1/auth/logout/all`
 - `GET /api/v1/me`
 - `PATCH /api/v1/me/profile`
 - `PATCH /api/v1/me/preferences`

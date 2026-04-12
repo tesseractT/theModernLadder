@@ -288,6 +288,41 @@ class GenerateSuggestionsApiTest extends TestCase
             ->assertJsonValidationErrors('pantry_item_ids');
     }
 
+    public function test_suggestion_request_normalizes_recipe_type_alias_and_selected_item_ids_in_the_response_payload(): void
+    {
+        $user = User::factory()->create();
+        $pineapple = $this->ingredient('Pineapple');
+        $banana = $this->ingredient('Banana');
+
+        $this->recipeTemplate(
+            'Fruit Bowl',
+            'drink',
+            ['vegan', 'vegetarian'],
+            [$pineapple, $banana]
+        );
+
+        $firstItem = $this->pantryItem($user, $pineapple);
+        $secondItem = $this->pantryItem($user, $banana);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/me/suggestions', [
+            'recipe_type' => '  DRINK  ',
+            'pantry_item_ids' => [
+                " {$firstItem->id} ",
+                $secondItem->id,
+                $firstItem->id,
+            ],
+            'limit' => 2,
+        ])
+            ->assertOk()
+            ->assertJsonPath('request.goal', 'drink')
+            ->assertJsonPath('request.limit', 2)
+            ->assertJsonPath('request.pantry_item_ids.0', $firstItem->id)
+            ->assertJsonPath('request.pantry_item_ids.1', $secondItem->id)
+            ->assertJsonCount(2, 'request.pantry_item_ids');
+    }
+
     public function test_pairing_signals_help_surface_partial_matches(): void
     {
         $user = User::factory()->create();

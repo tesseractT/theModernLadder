@@ -12,6 +12,7 @@ use App\Modules\AI\Application\Support\RecipeExplanationFallbackBuilder;
 use App\Modules\AI\Application\Support\RecipeExplanationOutputValidator;
 use App\Modules\AI\Application\Support\RecipeExplanationPromptBuilder;
 use App\Modules\Recipes\Application\Services\RecipeTemplateDetailService;
+use App\Modules\Shared\Application\Support\LogContextSanitizer;
 use App\Modules\Users\Domain\Models\User;
 use Illuminate\Support\Facades\Log;
 
@@ -70,7 +71,7 @@ class RecipeTemplateExplanationService
                 'prompt_version' => $context->promptVersion,
                 'schema_version' => $context->schemaVersion,
                 'error' => class_basename($exception),
-                'context' => $exception->context,
+                'context' => LogContextSanitizer::sanitize($exception->context),
             ]);
 
             if ((bool) config('ai.explanations.fallback_enabled', true)) {

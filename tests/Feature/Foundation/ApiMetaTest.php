@@ -40,4 +40,12 @@ class ApiMetaTest extends TestCase
             ->assertOk()
             ->assertHeader('X-Request-Id', $requestId);
     }
+
+    public function test_api_responses_include_safe_default_security_headers(): void
+    {
+        $this->getJson('/api/v1/meta')
+            ->assertOk()
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('Referrer-Policy', 'no-referrer');
+    }
 }

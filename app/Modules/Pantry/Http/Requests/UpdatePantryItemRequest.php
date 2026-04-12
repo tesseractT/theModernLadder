@@ -2,6 +2,7 @@
 
 namespace App\Modules\Pantry\Http\Requests;
 
+use App\Modules\Pantry\Application\DTO\UpdatePantryItemData;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePantryItemRequest extends FormRequest
@@ -52,13 +53,15 @@ class UpdatePantryItemRequest extends FormRequest
         ];
     }
 
-    public function pantryAttributes(): array
+    public function payload(): UpdatePantryItemData
     {
-        return $this->safe()->only([
-            'quantity',
-            'unit',
-            'note',
-            'expires_on',
-        ]);
+        return UpdatePantryItemData::fromValidated(
+            $this->safe()->only([
+                'quantity',
+                'unit',
+                'note',
+                'expires_on',
+            ])
+        );
     }
 }

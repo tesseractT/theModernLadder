@@ -6,7 +6,7 @@ use App\Modules\Ingredients\Http\Controllers\ShowIngredientController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('ingredients')->name('ingredients.')->group(function (): void {
-    Route::middleware('auth:sanctum')
+    Route::middleware(['auth:sanctum', 'active.user'])
         ->get('/search', SearchIngredientsController::class)
         ->name('search');
 

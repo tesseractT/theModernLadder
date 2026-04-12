@@ -119,6 +119,11 @@ Request:
 }
 ```
 
+Request normalization:
+
+- `ingredient_id`, `unit`, and `note` are trimmed before validation/persistence
+- `quantity` is normalized as numeric input
+
 Response:
 
 ```json
@@ -168,6 +173,8 @@ Supported fields:
 - `expires_on`
 
 The canonical `ingredient_id` is not editable in Step 3.
+
+Only provided fields are updated. Nullable fields such as `note`, `unit`, and `expires_on` can be cleared by sending `null`.
 
 ## Remove pantry item
 

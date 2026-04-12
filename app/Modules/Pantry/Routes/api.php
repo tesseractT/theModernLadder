@@ -6,7 +6,7 @@ use App\Modules\Pantry\Http\Controllers\StorePantryItemController;
 use App\Modules\Pantry\Http\Controllers\UpdatePantryItemController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')
+Route::middleware(['auth:sanctum', 'active.user'])
     ->prefix('me/pantry')
     ->name('me.pantry.')
     ->group(function (): void {

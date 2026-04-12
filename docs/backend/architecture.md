@@ -37,6 +37,18 @@ Cross-cutting concerns live in `Shared` so the domain modules do not depend on o
 - Contributions and moderation cases are modeled as structured, auditable records rather than implicit flags.
 - Contributor reputation is stored as an aggregate table, not derived logic, so scoring rules can evolve later.
 
+## Current write-path pattern
+
+The most important live write endpoints now follow the same boundary shape:
+
+- `FormRequest` owns normalization and validation only
+- module-local payload DTOs carry validated input into application services
+- controllers stay thin: authorize, delegate, respond
+- services orchestrate persistence and domain-facing decisions without depending on HTTP requests
+- resources format responses, including the top-level suggestions payload
+
+This pattern is currently applied to pantry writes, current-user profile/preferences updates, and deterministic suggestion generation.
+
 ## Explicitly deferred
 
 - AI-driven recommendation logic beyond the grounded explanation layer

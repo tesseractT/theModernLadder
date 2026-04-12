@@ -2,6 +2,7 @@
 
 namespace App\Modules\Pantry\Http\Requests;
 
+use App\Modules\Pantry\Application\DTO\StorePantryItemData;
 use App\Modules\Shared\Domain\Enums\ContentStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -67,14 +68,16 @@ class StorePantryItemRequest extends FormRequest
         ];
     }
 
-    public function pantryAttributes(): array
+    public function payload(): StorePantryItemData
     {
-        return $this->safe()->only([
-            'ingredient_id',
-            'quantity',
-            'unit',
-            'note',
-            'expires_on',
-        ]);
+        return StorePantryItemData::fromValidated(
+            $this->safe()->only([
+                'ingredient_id',
+                'quantity',
+                'unit',
+                'note',
+                'expires_on',
+            ])
+        );
     }
 }

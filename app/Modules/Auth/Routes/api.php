@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Http\Controllers\LoginController;
+use App\Modules\Auth\Http\Controllers\LogoutAllController;
 use App\Modules\Auth\Http\Controllers\LogoutController;
 use App\Modules\Auth\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\Route;
@@ -18,5 +19,9 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
         Route::middleware('throttle:auth.logout')
             ->post('/logout', LogoutController::class)
             ->name('logout');
+
+        Route::middleware('throttle:auth.logout')
+            ->post('/logout/all', LogoutAllController::class)
+            ->name('logout.all');
     });
 });

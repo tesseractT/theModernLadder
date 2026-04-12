@@ -7,14 +7,14 @@ use App\Modules\Recipes\Http\Controllers\ShowRecipeTemplateController;
 use App\Modules\Recipes\Http\Controllers\ShowRecipeTemplateDetailController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')
+Route::middleware(['auth:sanctum', 'active.user'])
     ->prefix('me/suggestions')
     ->name('me.suggestions.')
     ->group(function (): void {
         Route::post('/', GenerateSuggestionsController::class)->name('store');
     });
 
-Route::middleware('auth:sanctum')
+Route::middleware(['auth:sanctum', 'active.user'])
     ->prefix('recipes/templates')
     ->name('recipes.templates.')
     ->group(function (): void {

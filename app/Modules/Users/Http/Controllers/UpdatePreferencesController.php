@@ -12,9 +12,11 @@ class UpdatePreferencesController extends ApiController
 {
     public function __invoke(UpdatePreferencesRequest $request, AccountService $accountService): JsonResponse
     {
+        $this->authorize('update', $request->user());
+
         $user = $accountService->updateFoodPreferences(
             $request->user(),
-            $request->preferenceAttributes()
+            $request->payload()
         );
 
         return $this->respond([

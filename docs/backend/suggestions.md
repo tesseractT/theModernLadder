@@ -35,6 +35,12 @@ Example:
 
 `pantry_item_ids` must belong to the current authenticated user and must reference active pantry items.
 
+Request normalization:
+
+- `goal` and the alias field `recipe_type` are trimmed and lowercased
+- duplicate or blank `pantry_item_ids` are removed before evaluation
+- the `request` object in the response echoes the normalized values actually used by the deterministic engine
+
 ## Response shape
 
 Example:

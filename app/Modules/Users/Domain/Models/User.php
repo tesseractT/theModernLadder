@@ -7,6 +7,7 @@ use App\Modules\Moderation\Domain\Models\ModerationCase;
 use App\Modules\Pantry\Domain\Models\PantryItem;
 use App\Modules\Recipes\Domain\Models\RecipeTemplate;
 use App\Modules\Reputation\Domain\Models\ContributorScore;
+use App\Modules\Users\Domain\Enums\UserRole;
 use App\Modules\Users\Domain\Enums\UserStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,6 +46,7 @@ class User extends Authenticatable
             'last_seen_at' => 'datetime',
             'password' => 'hashed',
             'status' => UserStatus::class,
+            'role' => UserRole::class,
         ];
     }
 
@@ -105,5 +107,37 @@ class User extends Authenticatable
     public function defaultDisplayName(): string
     {
         return Str::headline((string) Str::of($this->email)->before('@'));
+    }
+
+    public function roleOrDefault(): UserRole
+    {
+        return $this->role ?? UserRole::User;
+    }
+
+    public function hasRole(UserRole|string $role): bool
+    {
+        $expectedRole = is_string($role) ? UserRole::from($role) : $role;
+
+        return $this->roleOrDefault() === $expectedRole;
+    }
+
+    public function isUser(): bool
+    {
+        return $this->hasRole(UserRole::User);
+    }
+
+    public function isModerator(): bool
+    {
+        return $this->hasRole(UserRole::Moderator);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(UserRole::Admin);
+    }
+
+    public function canModerate(): bool
+    {
+        return $this->isModerator() || $this->isAdmin();
     }
 }

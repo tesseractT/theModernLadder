@@ -37,7 +37,7 @@ class LoginRequest extends FormRequest
 
     public function authenticate(): User
     {
-        $this->ensureIsNotRateLimited();
+        $this->ensureIsNotCredentialRateLimited();
 
         $user = User::query()
             ->where('email', $this->string('email')->toString())
@@ -48,14 +48,17 @@ class LoginRequest extends FormRequest
             || ! Hash::check($this->string('password')->toString(), $user->password)
             || $user->status !== UserStatus::Active
         ) {
-            RateLimiter::hit($this->throttleKey());
+            RateLimiter::hit(
+                $this->credentialThrottleKey(),
+                $this->credentialThrottleDecaySeconds()
+            );
 
             throw ValidationException::withMessages([
                 'email' => [trans('auth.failed')],
             ]);
         }
 
-        RateLimiter::clear($this->throttleKey());
+        RateLimiter::clear($this->credentialThrottleKey());
 
         return $user;
     }
@@ -65,15 +68,18 @@ class LoginRequest extends FormRequest
         return $this->string('device_name')->toString() ?: 'flutter-mobile';
     }
 
-    public function ensureIsNotRateLimited(): void
+    public function ensureIsNotCredentialRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (! RateLimiter::tooManyAttempts(
+            $this->credentialThrottleKey(),
+            $this->credentialThrottleMaxAttempts()
+        )) {
             return;
         }
 
         event(new Lockout($this));
 
-        $seconds = RateLimiter::availableIn($this->throttleKey());
+        $seconds = RateLimiter::availableIn($this->credentialThrottleKey());
 
         throw ValidationException::withMessages([
             'email' => [trans('auth.throttle', [
@@ -83,10 +89,26 @@ class LoginRequest extends FormRequest
         ]);
     }
 
-    public function throttleKey(): string
+    public function credentialThrottleKey(): string
     {
-        return Str::transliterate(
+        return 'auth.login.credentials|'.Str::transliterate(
             $this->string('email')->lower()->append('|', $this->ip())->toString()
+        );
+    }
+
+    protected function credentialThrottleMaxAttempts(): int
+    {
+        return max(
+            1,
+            (int) config('api.route_rate_limits.auth.login.credential_lockout.max_attempts', 5)
+        );
+    }
+
+    protected function credentialThrottleDecaySeconds(): int
+    {
+        return max(
+            1,
+            (int) config('api.route_rate_limits.auth.login.credential_lockout.decay_seconds', 60)
         );
     }
 }

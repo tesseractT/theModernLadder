@@ -3,6 +3,7 @@
 namespace App\Modules\Recipes\Http\Requests;
 
 use App\Modules\Pantry\Domain\Models\PantryItem;
+use App\Modules\Recipes\Application\DTO\GenerateSuggestionsData;
 use App\Modules\Recipes\Domain\Enums\RecipeType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
@@ -19,16 +20,21 @@ class GenerateSuggestionsRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $recipeType = $this->filled('recipe_type')
+            ? Str::lower(trim((string) $this->input('recipe_type')))
+            : null;
+
         $goal = $this->filled('goal')
             ? Str::lower(trim((string) $this->input('goal')))
             : null;
 
-        if ($goal === null && $this->filled('recipe_type')) {
-            $goal = Str::lower(trim((string) $this->input('recipe_type')));
+        if ($goal === null && $recipeType !== null) {
+            $goal = $recipeType;
         }
 
         $this->merge([
             'goal' => $goal,
+            'recipe_type' => $recipeType,
             'pantry_item_ids' => collect(Arr::wrap($this->input('pantry_item_ids')))
                 ->map(fn ($value) => trim((string) $value))
                 ->filter()
@@ -47,7 +53,7 @@ class GenerateSuggestionsRequest extends FormRequest
     {
         return [
             'goal' => ['nullable', 'string', Rule::in(RecipeType::values())],
-            'recipe_type' => ['sometimes', 'string', Rule::in(RecipeType::values())],
+            'recipe_type' => ['sometimes', 'nullable', 'string', Rule::in(RecipeType::values())],
             'pantry_item_ids' => [
                 'sometimes',
                 'array',
@@ -90,9 +96,9 @@ class GenerateSuggestionsRequest extends FormRequest
         });
     }
 
-    public function filters(): array
+    public function payload(): GenerateSuggestionsData
     {
-        return [
+        return GenerateSuggestionsData::fromValidated([
             'goal' => $this->goal(),
             'pantry_item_ids' => $this->selectedPantryItemIds(),
             'limit' => $this->resultLimit(),
@@ -100,7 +106,7 @@ class GenerateSuggestionsRequest extends FormRequest
                 'include_substitutions',
                 (bool) config('suggestions.defaults.include_substitutions', true)
             ),
-        ];
+        ]);
     }
 
     public function goal(): ?string
