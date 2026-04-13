@@ -21,6 +21,7 @@ class GenerateRecipeTemplateExplanationController extends ApiController
                 user: $request->user(),
                 recipeTemplateId: $recipeTemplate,
                 requestId: (string) ($request->attributes->get('request_id') ?: $request->header('X-Request-Id')),
+                routeName: $request->route()?->getName(),
             );
         } catch (RecipeExplanationUnavailableException) {
             return $this->respond([

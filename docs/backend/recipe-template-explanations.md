@@ -178,6 +178,7 @@ When provider generation fails:
 - raw provider payloads are never returned to clients
 - provider secrets are never exposed
 - failures are logged with request id, template id, provider, model when available, and schema/prompt versions
+- failures are also persisted to the admin-only internal event store with safe fields such as request id, template id, provider, failure type, and `fallback_used`
 - fallback stays isolated to this endpoint and does not affect the rest of the recipe-template flow
 
 Failure response when fallback is disabled:

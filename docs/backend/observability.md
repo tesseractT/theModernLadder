@@ -61,6 +61,7 @@ High-signal operational events currently include:
 These events intentionally exclude raw bearer tokens, passwords, provider secrets, and full provider payloads.
 
 `security.audit` now also covers privileged moderation decisions, with request correlation and safe transition metadata.
+Admin users can now browse sanitized audit and AI-failure records through the queryable internal `admin_events` store, while the original log events remain unchanged.
 
 ## Request correlation
 

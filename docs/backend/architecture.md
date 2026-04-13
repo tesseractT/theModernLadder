@@ -1,6 +1,6 @@
 # Backend Architecture Note
 
-Step 1 established the modular monolith foundation. Step 2 added Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`. Step 3 added authenticated ingredient lookup and pantry CRUD as the first real product workflow. Step 4 added deterministic pantry-to-suggestion generation. Step 5 added pantry-aware recipe-template detail plus a rerunnable starter catalog. Step 6 added a grounded server-side AI explanation layer. Step 7 now activates the first real contribution and moderation workflow foundation on top of the previously deferred `Contributions` and `Moderation` modules.
+Step 1 established the modular monolith foundation. Step 2 added Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`. Step 3 added authenticated ingredient lookup and pantry CRUD as the first real product workflow. Step 4 added deterministic pantry-to-suggestion generation. Step 5 added pantry-aware recipe-template detail plus a rerunnable starter catalog. Step 6 added a grounded server-side AI explanation layer. Step 7 activated the first real contribution and moderation workflow foundation. Step 8 now adds the first internal admin/ops visibility layer on top of those moderation, audit, and AI-failure signals.
 
 ## Step 1 goal
 
@@ -37,6 +37,7 @@ Cross-cutting concerns live in `Shared` so the domain modules do not depend on o
 - Contributions and moderation cases are modeled as structured, auditable records rather than implicit flags.
 - Contributor reputation is stored as an aggregate table, not derived logic, so scoring rules can evolve later.
 - Moderation action history is now append-only so reports and moderator decisions stay reviewable even when the current contribution state changes later.
+- Internal admin visibility now uses a small append-only event store rather than parsing flat application logs at request time.
 
 ## Current write-path pattern
 
@@ -62,6 +63,6 @@ This pattern is currently applied to pantry writes, current-user profile/prefere
 - nutrition calculations
 - conversational memory, vectors, or general-purpose AI assistance
 
-## Recommended Step 8
+## Recommended Step 9
 
 Build the template interaction loop next. The backend now supports suggestion generation, pantry-aware template detail, and grounded explanation copy, so the best next step is to add save/bookmark and lightweight “cooked this” interactions that capture what users actually do with those templates.

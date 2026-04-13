@@ -2,6 +2,7 @@
 
 namespace App\Modules\AI\Application\Services;
 
+use App\Modules\Admin\Application\Services\AdminEventRecorder;
 use App\Modules\AI\Application\Contracts\RecipeExplanationProvider;
 use App\Modules\AI\Application\DTO\RecipeExplanationContext;
 use App\Modules\AI\Application\DTO\RecipeExplanationPayload;
@@ -24,12 +25,14 @@ class RecipeTemplateExplanationService
         protected RecipeExplanationPromptBuilder $promptBuilder,
         protected RecipeExplanationOutputValidator $outputValidator,
         protected RecipeExplanationFallbackBuilder $fallbackBuilder,
+        protected AdminEventRecorder $adminEventRecorder,
     ) {}
 
     public function generateForUser(
         User $user,
         string $recipeTemplateId,
         string $requestId,
+        ?string $routeName = null,
     ): RecipeExplanationPayload {
         $detail = $this->recipeTemplateDetailService->detailForUser($user, $recipeTemplateId);
         $context = RecipeExplanationContext::fromDetail(
@@ -63,6 +66,8 @@ class RecipeTemplateExplanationService
                 explanation: $validated,
             );
         } catch (RecipeExplanationProviderException|InvalidRecipeExplanationException $exception) {
+            $sanitizedContext = LogContextSanitizer::sanitize($exception->context);
+
             Log::warning('recipe_template.explanation.failed', [
                 'request_id' => $context->requestId,
                 'user_id' => $context->userId,
@@ -71,11 +76,30 @@ class RecipeTemplateExplanationService
                 'prompt_version' => $context->promptVersion,
                 'schema_version' => $context->schemaVersion,
                 'error' => class_basename($exception),
-                'context' => LogContextSanitizer::sanitize($exception->context),
+                'context' => $sanitizedContext,
             ]);
 
             if ((bool) config('ai.explanations.fallback_enabled', true)) {
                 $fallback = $this->fallbackBuilder->build($context);
+
+                $this->adminEventRecorder->recordAiExplanationFailure(
+                    event: 'recipe_template.explanation.failed',
+                    actorUserId: $context->userId,
+                    targetId: $context->templateId,
+                    requestId: $context->requestId,
+                    routeName: $routeName,
+                    metadata: [
+                        'provider' => $sanitizedContext['provider'] ?? config('ai.provider'),
+                        'model' => $sanitizedContext['model'] ?? null,
+                        'failure_type' => class_basename($exception),
+                        'failure_reason' => $sanitizedContext['reason'] ?? ($sanitizedContext['error_type'] ?? class_basename($exception)),
+                        'error_status' => $sanitizedContext['status'] ?? null,
+                        'error_code' => $sanitizedContext['error_code'] ?? null,
+                        'fallback_used' => true,
+                        'prompt_version' => $context->promptVersion,
+                        'schema_version' => $context->schemaVersion,
+                    ],
+                );
 
                 Log::info('recipe_template.explanation.generated', [
                     'request_id' => $context->requestId,
@@ -95,6 +119,25 @@ class RecipeTemplateExplanationService
                     explanation: $fallback,
                 );
             }
+
+            $this->adminEventRecorder->recordAiExplanationFailure(
+                event: 'recipe_template.explanation.failed',
+                actorUserId: $context->userId,
+                targetId: $context->templateId,
+                requestId: $context->requestId,
+                routeName: $routeName,
+                metadata: [
+                    'provider' => $sanitizedContext['provider'] ?? config('ai.provider'),
+                    'model' => $sanitizedContext['model'] ?? null,
+                    'failure_type' => class_basename($exception),
+                    'failure_reason' => $sanitizedContext['reason'] ?? ($sanitizedContext['error_type'] ?? class_basename($exception)),
+                    'error_status' => $sanitizedContext['status'] ?? null,
+                    'error_code' => $sanitizedContext['error_code'] ?? null,
+                    'fallback_used' => false,
+                    'prompt_version' => $context->promptVersion,
+                    'schema_version' => $context->schemaVersion,
+                ],
+            );
 
             throw new RecipeExplanationUnavailableException(
                 previous: $exception

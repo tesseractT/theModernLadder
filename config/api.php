@@ -39,5 +39,10 @@ return [
                 'per_minute' => (int) env('API_MODERATION_ACTION_RATE_LIMIT_PER_MINUTE', 30),
             ],
         ],
+        'admin' => [
+            'read' => [
+                'per_minute' => (int) env('API_ADMIN_READ_RATE_LIMIT_PER_MINUTE', 60),
+            ],
+        ],
     ],
 ];

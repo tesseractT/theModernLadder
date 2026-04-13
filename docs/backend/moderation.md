@@ -65,6 +65,11 @@ Internal moderation:
 - `GET /api/v1/moderation/contributions/{contribution}`
 - `POST /api/v1/moderation/contributions/{contribution}/actions`
 
+Admin read surfaces built on top of this workflow now live at:
+
+- `GET /api/v1/admin/moderation/flagged-contributions`
+- `GET /api/v1/admin/moderation/actions`
+
 Route-specific throttles are applied to contribution submission, reporting, and moderation actions.
 
 ## Report flow
@@ -92,6 +97,8 @@ Privileged moderation actions also emit `security.audit` events:
 - `moderation.contribution.flagged`
 
 Audit logs intentionally exclude raw moderation notes and any secret/token data.
+
+Those sanitized privileged audit events are now also queryable for admins through the admin ops event store.
 
 ## Current constraints
 

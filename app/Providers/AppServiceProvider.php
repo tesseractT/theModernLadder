@@ -110,6 +110,14 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
+        RateLimiter::for('admin.read', function (Request $request): Limit {
+            return $this->routeRateLimit(
+                $request,
+                $this->authenticatedRateLimitKey($request),
+                (int) config('api.route_rate_limits.admin.read.per_minute', 60),
+            );
+        });
+
         Route::bind('pantryItem', function (string $value): PantryItem {
             $query = PantryItem::query()
                 ->active()

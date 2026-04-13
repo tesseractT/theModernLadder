@@ -39,6 +39,8 @@ The backend now emits `security.audit` log entries for real token lifecycle even
 - `moderation.contribution.rejected`
 - `moderation.contribution.flagged`
 
+These events now also land in the internal append-only `admin_events` store for admin-facing browsing without parsing raw log files.
+
 Each event includes:
 
 - `event`
@@ -69,6 +71,7 @@ This keeps token-bearing and user-scoped responses out of client and intermediar
 
 - AI explanation failure logs now redact secret-like context keys before anything is written to application logs.
 - privileged moderation decisions reuse the same sanitized audit logger and do not write raw notes into `security.audit`
+- admin-visible AI failure records store only curated safe fields such as request id, provider, failure type, and fallback usage
 - Client-facing AI failures still return the existing safe `503` contract and do not expose provider errors or secrets.
 - The repo intentionally does not log raw passwords, raw bearer tokens, or full provider request/response bodies.
 
