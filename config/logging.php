@@ -38,6 +38,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | API Slow Request Threshold
+    |--------------------------------------------------------------------------
+    |
+    | Slow API requests are logged as structured warning events when they
+    | meet or exceed this duration threshold in milliseconds. Set the
+    | value to zero or a negative number to disable slow-request logging.
+    |
+    */
+
+    'slow_request_threshold_ms' => (int) env('LOG_SLOW_REQUEST_THRESHOLD_MS', 1000),
+
+    /*
+    |--------------------------------------------------------------------------
     | Log Channels
     |--------------------------------------------------------------------------
     |

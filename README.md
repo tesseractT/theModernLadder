@@ -19,7 +19,7 @@ Production-grade backend foundation for a mobile-first food discovery platform b
 
 ## Module structure
 
-See [docs/backend/architecture.md](docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](docs/backend/authentication.md) for Flutter auth usage, [docs/backend/security.md](docs/backend/security.md) for the current security baseline and threat model, [docs/backend/pantry.md](docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](docs/backend/suggestions.md) for deterministic suggestions, [docs/backend/recipe-templates.md](docs/backend/recipe-templates.md) for template detail follow-through, and [docs/backend/recipe-template-explanations.md](docs/backend/recipe-template-explanations.md) for the grounded AI explanation layer.
+See [docs/backend/architecture.md](docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](docs/backend/authentication.md) for Flutter auth usage, [docs/backend/security.md](docs/backend/security.md) for the current security baseline and threat model, [docs/backend/observability.md](docs/backend/observability.md) for health and logging operations, [docs/backend/pantry.md](docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](docs/backend/suggestions.md) for deterministic suggestions, [docs/backend/recipe-templates.md](docs/backend/recipe-templates.md) for template detail follow-through, and [docs/backend/recipe-template-explanations.md](docs/backend/recipe-template-explanations.md) for the grounded AI explanation layer.
 
 Core modules:
 
@@ -65,6 +65,7 @@ Useful commands:
 - The backend test suite stays lightweight in CI because PHPUnit uses in-memory SQLite plus array/sync drivers, so no Postgres or Redis service containers are required.
 - Launch-hardening notes, env toggles, rollout steps, and rollback notes live in [docs/backend/launch-hardening.md](docs/backend/launch-hardening.md).
 - Repo-specific security baseline, threat model notes, and secret-handling expectations live in [docs/backend/security.md](docs/backend/security.md).
+- Observability, health-check, and production log-usage notes live in [docs/backend/observability.md](docs/backend/observability.md).
 
 ## Implemented so far
 

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Shared\Http\Middleware;
 
+use App\Modules\Shared\Application\Support\RequestLogContext;
 use Closure;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
@@ -19,13 +20,13 @@ class AssignRequestId
         $request->attributes->set('request_id', $requestId);
         $request->headers->set('X-Request-Id', $requestId);
 
-        Log::shareContext([
-            'request_id' => $requestId,
-        ]);
+        $this->replaceRequestLogContext($request, $requestId);
 
         try {
             $response = $next($request);
         } catch (Throwable $throwable) {
+            $this->replaceRequestLogContext($request, $requestId);
+
             $handler = app(ExceptionHandler::class);
 
             $handler->report($throwable);
@@ -33,9 +34,15 @@ class AssignRequestId
             $response = $handler->render($request, $throwable);
         }
 
+        $this->replaceRequestLogContext($request, $requestId);
         $response->headers->set('X-Request-Id', $requestId);
 
         return $response;
+    }
+
+    public function terminate(Request $request, Response $response): void
+    {
+        Log::withoutContext(RequestLogContext::sharedKeys());
     }
 
     protected function resolveRequestId(Request $request): string
@@ -47,5 +54,11 @@ class AssignRequestId
         }
 
         return (string) Str::uuid();
+    }
+
+    protected function replaceRequestLogContext(Request $request, string $requestId): void
+    {
+        Log::withoutContext(RequestLogContext::sharedKeys());
+        Log::shareContext(RequestLogContext::forRequest($request, $requestId));
     }
 }
