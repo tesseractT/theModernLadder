@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Modules\Contributions\Domain\Models\Contribution;
+use App\Modules\Contributions\Domain\Policies\ContributionPolicy;
 use App\Modules\Pantry\Domain\Models\PantryItem;
 use App\Modules\Pantry\Policies\PantryItemPolicy;
 use App\Modules\Users\Domain\Models\User;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Contribution::class, ContributionPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(PantryItem::class, PantryItemPolicy::class);
 
@@ -80,6 +83,30 @@ class AppServiceProvider extends ServiceProvider
                 $request,
                 $this->authenticatedRateLimitKey($request),
                 (int) config('api.route_rate_limits.recipes.explanation.per_minute', 5),
+            );
+        });
+
+        RateLimiter::for('contributions.store', function (Request $request): Limit {
+            return $this->routeRateLimit(
+                $request,
+                $this->authenticatedRateLimitKey($request),
+                (int) config('api.route_rate_limits.contributions.store.per_minute', 10),
+            );
+        });
+
+        RateLimiter::for('contributions.report', function (Request $request): Limit {
+            return $this->routeRateLimit(
+                $request,
+                $this->authenticatedRateLimitKey($request),
+                (int) config('api.route_rate_limits.contributions.report.per_minute', 15),
+            );
+        });
+
+        RateLimiter::for('moderation.actions', function (Request $request): Limit {
+            return $this->routeRateLimit(
+                $request,
+                $this->authenticatedRateLimitKey($request),
+                (int) config('api.route_rate_limits.moderation.actions.per_minute', 30),
             );
         });
 

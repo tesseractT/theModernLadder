@@ -35,6 +35,9 @@ The backend now emits `security.audit` log entries for real token lifecycle even
 - `auth.login.succeeded`
 - `auth.logout.succeeded`
 - `auth.logout_all.succeeded`
+- `moderation.contribution.approved`
+- `moderation.contribution.rejected`
+- `moderation.contribution.flagged`
 
 Each event includes:
 
@@ -44,8 +47,10 @@ Each event includes:
 - `target_type`
 - `target_id` when applicable
 - small safe metadata such as `revoked_token_count`
+- moderation transition metadata such as `from_status`, `to_status`, and `moderation_case_id`
 
 The audit logger never stores raw bearer tokens, passwords, provider secrets, or full provider payloads.
+It also avoids raw moderator notes in privileged moderation audit events.
 
 ### Safe API response defaults
 
@@ -63,6 +68,7 @@ This keeps token-bearing and user-scoped responses out of client and intermediar
 ### Secret-handling and logging
 
 - AI explanation failure logs now redact secret-like context keys before anything is written to application logs.
+- privileged moderation decisions reuse the same sanitized audit logger and do not write raw notes into `security.audit`
 - Client-facing AI failures still return the existing safe `503` contract and do not expose provider errors or secrets.
 - The repo intentionally does not log raw passwords, raw bearer tokens, or full provider request/response bodies.
 
@@ -86,3 +92,4 @@ When uploads are added later, they must ship with:
 - owner or role-based access boundaries
 - tests for malicious file types, oversize payloads, and authorization
 
+The current moderation workflow still does not include any upload or media-review path.

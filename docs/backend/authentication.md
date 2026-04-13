@@ -53,7 +53,7 @@ Notes:
 
 - new and existing accounts default safely to `user`
 - role checks are currently server-side only and are intentionally not exposed in the mobile auth payload
-- the foundation is meant for future moderation and admin prompts, not a full RBAC system in this step
+- the same foundation is now reused by moderation endpoints, but it is still not a full RBAC system
 
 ## Register
 
@@ -236,4 +236,4 @@ The existing `X-Request-Id` behavior still applies to these responses.
 - Social login
 - Token expiration and device/session management UX beyond simple current-user revoke-all support
 - Account deletion
-- Recipe recommendation, moderation, notifications, and AI flows
+- Notifications and broader admin workflows

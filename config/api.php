@@ -26,5 +26,18 @@ return [
                 'per_minute' => (int) env('API_RECIPE_EXPLANATION_RATE_LIMIT_PER_MINUTE', 5),
             ],
         ],
+        'contributions' => [
+            'store' => [
+                'per_minute' => (int) env('API_CONTRIBUTION_STORE_RATE_LIMIT_PER_MINUTE', 10),
+            ],
+            'report' => [
+                'per_minute' => (int) env('API_CONTRIBUTION_REPORT_RATE_LIMIT_PER_MINUTE', 15),
+            ],
+        ],
+        'moderation' => [
+            'actions' => [
+                'per_minute' => (int) env('API_MODERATION_ACTION_RATE_LIMIT_PER_MINUTE', 30),
+            ],
+        ],
     ],
 ];

@@ -5,10 +5,12 @@ namespace App\Modules\Moderation\Domain\Models;
 use App\Modules\Contributions\Domain\Models\Contribution;
 use App\Modules\Moderation\Domain\Enums\ModerationCaseStatus;
 use App\Modules\Users\Domain\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class ModerationCase extends Model
@@ -44,6 +46,16 @@ class ModerationCase extends Model
     public function contribution(): BelongsTo
     {
         return $this->belongsTo(Contribution::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereIn('status', ModerationCaseStatus::activeValues());
+    }
+
+    public function actions(): HasMany
+    {
+        return $this->hasMany(ModerationAction::class);
     }
 
     public function reporter(): BelongsTo

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUlid('reviewed_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->nullableUlidMorphs('subject');
             $table->string('action', 32)->index();
-            $table->string('status', 32)->default(ContributionStatus::Submitted->value)->index();
+            $table->string('status', 32)->default(ContributionStatus::Pending->value)->index();
             $table->json('payload')->nullable();
             $table->text('review_notes')->nullable();
             $table->timestampTz('reviewed_at')->nullable();

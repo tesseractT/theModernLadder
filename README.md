@@ -19,7 +19,7 @@ Production-grade backend foundation for a mobile-first food discovery platform b
 
 ## Module structure
 
-See [docs/backend/architecture.md](docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](docs/backend/authentication.md) for Flutter auth usage, [docs/backend/security.md](docs/backend/security.md) for the current security baseline and threat model, [docs/backend/observability.md](docs/backend/observability.md) for health and logging operations, [docs/backend/pantry.md](docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](docs/backend/suggestions.md) for deterministic suggestions, [docs/backend/recipe-templates.md](docs/backend/recipe-templates.md) for template detail follow-through, and [docs/backend/recipe-template-explanations.md](docs/backend/recipe-template-explanations.md) for the grounded AI explanation layer.
+See [docs/backend/architecture.md](docs/backend/architecture.md) for the foundation architecture note, [docs/backend/authentication.md](docs/backend/authentication.md) for Flutter auth usage, [docs/backend/security.md](docs/backend/security.md) for the current security baseline and threat model, [docs/backend/observability.md](docs/backend/observability.md) for health and logging operations, [docs/backend/pantry.md](docs/backend/pantry.md) for pantry integration, [docs/backend/suggestions.md](docs/backend/suggestions.md) for deterministic suggestions, [docs/backend/recipe-templates.md](docs/backend/recipe-templates.md) for template detail follow-through, [docs/backend/recipe-template-explanations.md](docs/backend/recipe-template-explanations.md) for the grounded AI explanation layer, and [docs/backend/moderation.md](docs/backend/moderation.md) for the first live contribution/moderation workflow.
 
 Core modules:
 
@@ -76,6 +76,7 @@ Useful commands:
 - Lean core schema for users, profiles, preferences, ingredients, recipes, and moderation foundations
 - Authenticated pantry CRUD, ingredient lookup, and deterministic pantry-to-suggestion generation
 - Pantry-aware recipe-template detail and grounded server-side AI explanations
+- Structured contribution submission, reporting, and first-pass moderation queue/actions
 - Request correlation IDs on API responses plus tighter throttles on high-risk auth and AI explanation endpoints
 - Versioned API scaffolding with request validation, resources, and feature tests
 - Documentation for Flutter authentication and current backend scope
@@ -110,6 +111,14 @@ Useful commands:
 
 - `POST /api/v1/recipes/templates/{recipeTemplate}/explanation`
 
-## Step 7 recommendation
+## Current contribution and moderation endpoints
+
+- `POST /api/v1/me/contributions`
+- `POST /api/v1/me/contributions/{contribution}/reports`
+- `GET /api/v1/moderation/contributions`
+- `GET /api/v1/moderation/contributions/{contribution}`
+- `POST /api/v1/moderation/contributions/{contribution}/actions`
+
+## Step 8 recommendation
 
 Build the template interaction loop next: add lightweight save/bookmark and “cooked this” style endpoints so the app can persist what users act on after opening a suggestion or reading an explanation, creating clean first-party feedback signals before deeper personalization work.

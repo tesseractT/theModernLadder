@@ -60,6 +60,8 @@ High-signal operational events currently include:
 
 These events intentionally exclude raw bearer tokens, passwords, provider secrets, and full provider payloads.
 
+`security.audit` now also covers privileged moderation decisions, with request correlation and safe transition metadata.
+
 ## Request correlation
 
 - API requests preserve a safe caller-supplied `X-Request-Id` when present.
