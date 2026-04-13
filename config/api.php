@@ -25,6 +25,16 @@ return [
             'explanation' => [
                 'per_minute' => (int) env('API_RECIPE_EXPLANATION_RATE_LIMIT_PER_MINUTE', 5),
             ],
+            'interactions' => [
+                'write' => [
+                    'per_minute' => (int) env('API_RECIPE_INTERACTION_WRITE_RATE_LIMIT_PER_MINUTE', 30),
+                ],
+            ],
+            'plan' => [
+                'write' => [
+                    'per_minute' => (int) env('API_RECIPE_PLAN_WRITE_RATE_LIMIT_PER_MINUTE', 30),
+                ],
+            ],
         ],
         'contributions' => [
             'store' => [

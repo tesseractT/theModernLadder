@@ -162,6 +162,25 @@ final readonly class RecipeExplanationContext
             ->all();
     }
 
+    public function schemaName(): string
+    {
+        return (string) Str::of($this->schemaVersion)
+            ->replaceMatches('/[^A-Za-z0-9]+/', '_')
+            ->trim('_')
+            ->lower();
+    }
+
+    public function cachePayload(): array
+    {
+        return [
+            'user_id' => $this->userId,
+            'template_id' => $this->templateId,
+            'prompt_version' => $this->promptVersion,
+            'schema_version' => $this->schemaVersion,
+            'prompt_payload' => $this->promptPayload(),
+        ];
+    }
+
     protected function ingredientGroupForPrompt(array $ingredients): array
     {
         return collect($ingredients)

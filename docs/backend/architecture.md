@@ -1,6 +1,6 @@
 # Backend Architecture Note
 
-Step 1 established the modular monolith foundation. Step 2 added Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`. Step 3 added authenticated ingredient lookup and pantry CRUD as the first real product workflow. Step 4 added deterministic pantry-to-suggestion generation. Step 5 added pantry-aware recipe-template detail plus a rerunnable starter catalog. Step 6 added a grounded server-side AI explanation layer. Step 7 activated the first real contribution and moderation workflow foundation. Step 8 now adds the first internal admin/ops visibility layer on top of those moderation, audit, and AI-failure signals.
+Step 1 established the modular monolith foundation. Step 2 added Sanctum-based mobile authentication plus the initial account surface for `register`, `login`, `logout`, `me`, `profile`, and `preferences`. Step 3 added authenticated ingredient lookup and pantry CRUD as the first real product workflow. Step 4 added deterministic pantry-to-suggestion generation. Step 5 added pantry-aware recipe-template detail plus a rerunnable starter catalog. Step 6 added a grounded server-side AI explanation layer. Step 7 activated the first real contribution and moderation workflow foundation. Step 8 added the first internal admin/ops visibility layer on top of those moderation, audit, and AI-failure signals. Step 10 now adds the first private retention loop for favorites, saved suggestions, bounded recent history, and planner-lite recipe follow-through.
 
 ## Step 1 goal
 
@@ -49,7 +49,7 @@ The most important live write endpoints now follow the same boundary shape:
 - services orchestrate persistence and domain-facing decisions without depending on HTTP requests
 - resources format responses, including the top-level suggestions payload
 
-This pattern is currently applied to pantry writes, current-user profile/preferences updates, and deterministic suggestion generation.
+This pattern is currently applied to pantry writes, current-user profile/preferences updates, deterministic suggestion generation, and the new retention/planner write paths.
 
 ## Explicitly deferred
 
@@ -58,11 +58,11 @@ This pattern is currently applied to pantry writes, current-user profile/prefere
 - automated moderation workflow engines, scoring heuristics, and full admin dashboards
 - Realtime features and notifications delivery
 - Advanced token expiration strategy, MFA, password reset, email verification, and social login
-- Save/bookmark flows, cooked-history tracking, shopping lists, meal planning, grocery workflows, or barcode ingestion
+- shopping lists, pantry-gap automation, full meal planning, grocery workflows, or barcode ingestion
 - Advanced trust scoring, abuse detection, and gamification rules
 - nutrition calculations
 - conversational memory, vectors, or general-purpose AI assistance
 
-## Recommended Step 9
+## Recommended Next Step
 
-Build the template interaction loop next. The backend now supports suggestion generation, pantry-aware template detail, and grounded explanation copy, so the best next step is to add save/bookmark and lightweight “cooked this” interactions that capture what users actually do with those templates.
+Use the new first-party retention signals carefully without changing the deterministic ranking boundary. The best next slice is a small resurfacing layer that helps Flutter highlight favorites, saved suggestions, and active plan items around the existing suggestion/detail experience while keeping privacy controls straightforward.

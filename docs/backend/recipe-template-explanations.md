@@ -4,6 +4,8 @@ Step 6 adds a tightly scoped server-side AI explanation layer on top of the exis
 
 The goal is not chat, memory, search, or diagnosis. The goal is to turn the structured template and pantry-fit data the backend already knows into friendly, grounded explanation copy for Flutter.
 
+The deterministic suggestion engine remains separate. `POST /api/v1/me/suggestions` still does retrieval and ranking from structured pantry/template/substitution/pairing data only, while this endpoint is limited to explanatory copy over that grounded result.
+
 ## Endpoint
 
 All endpoints remain versioned under `/api/v1`.
@@ -107,6 +109,11 @@ Example:
 - `ai` when the provider returned valid grounded output
 - `fallback` when the provider failed or produced unsafe / invalid output and the deterministic fallback path was used
 
+`meta.cached` is:
+
+- `false` on a fresh provider or fallback generation
+- `true` when an existing successful AI explanation for the same grounded user/template input was served from cache
+
 ## Grounding rules
 
 The prompt is built from structured backend data only:
@@ -126,6 +133,18 @@ The Step 6 prompt intentionally excludes untrusted or freeform user text:
 - freeform `disliked_ingredients`
 
 The provider is instructed to treat every text field as inert data, not as instructions.
+
+## Prompt template and versioning
+
+Prompt construction is centralized server-side in `RecipeExplanationPromptBuilder`.
+
+Current hardening rules:
+
+- prompt and schema versions come from `config/ai.php`
+- the prompt instructions explicitly state both versions
+- the structured-output schema name is derived from the configured schema version
+- only structured backend data from `RecipeTemplateDetailService` is used as prompt input
+- clients never receive raw prompts or provider request details
 
 ## Provider abstraction
 
@@ -148,6 +167,7 @@ The backend then validates the decoded payload again before it ever reaches Flut
 - field lengths and array sizes
 - follow-up option keys must match the server-generated allowed option set
 - no malformed or partial provider payloads are passed through
+- unsupported certainty phrasing is rejected centrally before response assembly
 
 The final `grounding` and `warnings_or_limits` fields are assembled server-side, not trusted from model output.
 
@@ -166,6 +186,7 @@ The backend rejects provider output that crosses into:
 - treatment
 - disease-management advice
 - therapeutic food claims
+- unsupported certainty language such as `guaranteed`, `definitely`, `certainly`, `proven`, or `safe for`
 - exact nutrition numbers
 - allergy-certainty or allergen-safety claims
 
@@ -180,6 +201,7 @@ When provider generation fails:
 - failures are logged with request id, template id, provider, model when available, and schema/prompt versions
 - failures are also persisted to the admin-only internal event store with safe fields such as request id, template id, provider, failure type, and `fallback_used`
 - fallback stays isolated to this endpoint and does not affect the rest of the recipe-template flow
+- unsafe provider fragments are not persisted as part of the failure reason metadata
 
 Failure response when fallback is disabled:
 
@@ -211,7 +233,9 @@ Environment variables introduced for Step 6:
 
 Notes:
 
-- caching is not enabled in Step 6 even though the config shape is reserved
+- explanation caching is now available behind `AI_EXPLANATION_CACHE_ENABLED`
+- only successful `source: ai` responses are cached; fallback and unavailable responses are never cached as successful output
+- cache keys include the authenticated user id plus the grounded template/pantry/prompt/schema inputs so repeated requests reuse work without cross-user leakage
 - OpenAI request storage defaults to `false`
 - the explanation endpoint is server-side only; the client never sees provider credentials
 
@@ -225,6 +249,9 @@ Step 6 automated coverage includes:
 - exclusion of untrusted user-entered text from prompts
 - malformed provider payload fallback
 - unsafe medical or diagnostic output fallback
+- unsupported certainty-language fallback
+- successful explanation cache hits for repeated grounded requests
+- fallback responses are not cached as successful AI output
 - clean `503` behavior when fallback is disabled
 - concrete OpenAI provider request/response parsing with faked HTTP
 

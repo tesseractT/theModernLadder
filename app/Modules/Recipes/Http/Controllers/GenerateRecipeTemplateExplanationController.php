@@ -4,6 +4,8 @@ namespace App\Modules\Recipes\Http\Controllers;
 
 use App\Modules\AI\Application\Exceptions\RecipeExplanationUnavailableException;
 use App\Modules\AI\Application\Services\RecipeTemplateExplanationService;
+use App\Modules\Recipes\Application\Services\RecipeTemplateInteractionService;
+use App\Modules\Recipes\Domain\Enums\RecipeTemplateInteractionSource;
 use App\Modules\Recipes\Http\Resources\RecipeTemplateExplanationResource;
 use App\Modules\Shared\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +16,8 @@ class GenerateRecipeTemplateExplanationController extends ApiController
     public function __invoke(
         Request $request,
         string $recipeTemplate,
-        RecipeTemplateExplanationService $recipeTemplateExplanationService
+        RecipeTemplateExplanationService $recipeTemplateExplanationService,
+        RecipeTemplateInteractionService $recipeTemplateInteractionService,
     ): JsonResponse {
         try {
             $payload = $recipeTemplateExplanationService->generateForUser(
@@ -29,6 +32,12 @@ class GenerateRecipeTemplateExplanationController extends ApiController
                 'code' => 'recipe_explanation_unavailable',
             ], 503);
         }
+
+        $recipeTemplateInteractionService->recordRecentHistory(
+            $request->user(),
+            $recipeTemplate,
+            RecipeTemplateInteractionSource::RecipeExplanation,
+        );
 
         return $this->respond(
             RecipeTemplateExplanationResource::make($payload)->resolve($request)

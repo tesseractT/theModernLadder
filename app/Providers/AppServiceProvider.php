@@ -6,6 +6,7 @@ use App\Modules\Contributions\Domain\Models\Contribution;
 use App\Modules\Contributions\Domain\Policies\ContributionPolicy;
 use App\Modules\Pantry\Domain\Models\PantryItem;
 use App\Modules\Pantry\Policies\PantryItemPolicy;
+use App\Modules\Recipes\Domain\Models\RecipePlanItem;
 use App\Modules\Users\Domain\Models\User;
 use App\Modules\Users\Policies\UserPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -86,6 +87,22 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
+        RateLimiter::for('recipes.interactions.write', function (Request $request): Limit {
+            return $this->routeRateLimit(
+                $request,
+                $this->authenticatedRateLimitKey($request),
+                (int) config('api.route_rate_limits.recipes.interactions.write.per_minute', 30),
+            );
+        });
+
+        RateLimiter::for('recipes.plan.write', function (Request $request): Limit {
+            return $this->routeRateLimit(
+                $request,
+                $this->authenticatedRateLimitKey($request),
+                (int) config('api.route_rate_limits.recipes.plan.write.per_minute', 30),
+            );
+        });
+
         RateLimiter::for('contributions.store', function (Request $request): Limit {
             return $this->routeRateLimit(
                 $request,
@@ -122,6 +139,21 @@ class AppServiceProvider extends ServiceProvider
             $query = PantryItem::query()
                 ->active()
                 ->with('ingredient');
+
+            $user = request()->user();
+
+            if ($user instanceof User) {
+                $query->ownedBy($user);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+
+            return $query->findOrFail($value);
+        });
+
+        Route::bind('recipePlanItem', function (string $value): RecipePlanItem {
+            $query = RecipePlanItem::query()
+                ->with('recipeTemplate');
 
             $user = request()->user();
 

@@ -5,7 +5,9 @@ namespace App\Modules\Users\Domain\Models;
 use App\Modules\Contributions\Domain\Models\Contribution;
 use App\Modules\Moderation\Domain\Models\ModerationCase;
 use App\Modules\Pantry\Domain\Models\PantryItem;
+use App\Modules\Recipes\Domain\Models\RecipePlanItem;
 use App\Modules\Recipes\Domain\Models\RecipeTemplate;
+use App\Modules\Recipes\Domain\Models\RecipeTemplateInteraction;
 use App\Modules\Reputation\Domain\Models\ContributorScore;
 use App\Modules\Users\Domain\Enums\UserRole;
 use App\Modules\Users\Domain\Enums\UserStatus;
@@ -84,6 +86,16 @@ class User extends Authenticatable
     public function recipeTemplates(): HasMany
     {
         return $this->hasMany(RecipeTemplate::class, 'created_by_user_id');
+    }
+
+    public function recipeTemplateInteractions(): HasMany
+    {
+        return $this->hasMany(RecipeTemplateInteraction::class);
+    }
+
+    public function recipePlanItems(): HasMany
+    {
+        return $this->hasMany(RecipePlanItem::class);
     }
 
     public function reportedModerationCases(): HasMany

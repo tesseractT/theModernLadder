@@ -71,4 +71,14 @@ class RecipeTemplate extends Model
             ->orderBy('position')
             ->orderBy('created_at');
     }
+
+    public function interactions(): HasMany
+    {
+        return $this->hasMany(RecipeTemplateInteraction::class);
+    }
+
+    public function planItems(): HasMany
+    {
+        return $this->hasMany(RecipePlanItem::class);
+    }
 }

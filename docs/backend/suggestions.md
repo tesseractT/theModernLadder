@@ -1,6 +1,6 @@
 # Suggestions API Guide
 
-Step 4 adds the first deterministic pantry-to-suggestion layer. It turns the authenticated user's active pantry ingredients into ranked recipe-template candidates without AI or external APIs.
+The suggestions surface remains a deterministic pantry-to-suggestion layer. It turns the authenticated user's active pantry ingredients into ranked recipe-template candidates without AI or external APIs.
 
 ## Endpoint
 
@@ -11,6 +11,10 @@ All endpoints remain versioned under `/api/v1`.
 This endpoint uses the same bearer-token flow documented in [authentication.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/authentication.md).
 
 Suggestion candidates can now be opened through [recipe-templates.md](/Users/bennyebere/Desktop/theModernLadder/docs/backend/recipe-templates.md) with `GET /api/v1/recipes/templates/{recipeTemplate}`.
+
+The `recipe_template_id` returned from each candidate is also the canonical id Flutter should reuse for favorites, saved suggestions, recent-history follow-through, and planner-lite endpoints documented in [recipe-template-retention.md](/Users/bennyebere/Developer/theModernLadder/docs/backend/recipe-template-retention.md).
+
+The separate explanation endpoint, `POST /api/v1/recipes/templates/{recipeTemplate}/explanation`, reads the grounded detail that this deterministic flow already produced. It does not participate in candidate retrieval, scoring, sorting, or ranking.
 
 ## Request shape
 
@@ -169,6 +173,8 @@ If no useful candidates are available, the API returns an empty `candidates` arr
 - published substitutions can cover missing required ingredients when the user already has the substitute ingredient in their pantry
 - published pairings can add small support signals for partially matched templates
 
+No model call is made anywhere in `POST /api/v1/me/suggestions`. Ranking remains fully inspectable from the stored pantry, template, substitution, pairing, and preference data.
+
 ## Scoring model
 
 Step 4 uses a transparent integer score:
@@ -207,9 +213,9 @@ Recipe templates participate in suggestions only when they have:
 
 Step 4 tests build a tiny starter catalog around templates such as smoothie, salsa, bowl, and yogurt mix. A broader curated template catalog is deferred.
 
-## Deferred to Step 6
+## Still intentionally out of scope
 
 - user save/bookmark or cooked-history interactions after detail view
 - nutrition calculations
-- AI explanations or natural-language generation
-- advanced ranking, personalization, or recommendation learning
+- AI-driven retrieval, ranking, or recommendation learning
+- explanation generation inside the suggestion endpoint itself

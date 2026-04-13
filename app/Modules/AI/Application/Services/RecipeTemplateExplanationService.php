@@ -15,6 +15,7 @@ use App\Modules\AI\Application\Support\RecipeExplanationPromptBuilder;
 use App\Modules\Recipes\Application\Services\RecipeTemplateDetailService;
 use App\Modules\Shared\Application\Support\LogContextSanitizer;
 use App\Modules\Users\Domain\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class RecipeTemplateExplanationService
@@ -43,10 +44,35 @@ class RecipeTemplateExplanationService
             schemaVersion: (string) config('ai.explanations.schema_version', 'recipe_template_explanation.v1'),
         );
 
+        if ($cached = $this->cachedExplanation($context)) {
+            Log::info('recipe_template.explanation.generated', [
+                'request_id' => $context->requestId,
+                'user_id' => $context->userId,
+                'template_id' => $context->templateId,
+                'source' => 'cache',
+                'provider' => null,
+                'model' => null,
+                'latency_ms' => null,
+                'prompt_version' => $context->promptVersion,
+                'schema_version' => $context->schemaVersion,
+            ]);
+
+            return $this->payload(
+                context: $context,
+                source: 'ai',
+                explanation: $cached['explanation'],
+                cached: true,
+                generatedAt: $cached['generated_at'],
+            );
+        }
+
         try {
             $prompt = $this->promptBuilder->build($context);
             $providerResponse = $this->provider->generate($prompt);
             $validated = $this->outputValidator->validate($providerResponse->payload, $context);
+            $generatedAt = now()->toIso8601String();
+
+            $this->storeCachedExplanation($context, $validated, $generatedAt);
 
             Log::info('recipe_template.explanation.generated', [
                 'request_id' => $context->requestId,
@@ -64,6 +90,7 @@ class RecipeTemplateExplanationService
                 context: $context,
                 source: 'ai',
                 explanation: $validated,
+                generatedAt: $generatedAt,
             );
         } catch (RecipeExplanationProviderException|InvalidRecipeExplanationException $exception) {
             $sanitizedContext = LogContextSanitizer::sanitize($exception->context);
@@ -149,6 +176,8 @@ class RecipeTemplateExplanationService
         RecipeExplanationContext $context,
         string $source,
         array $explanation,
+        bool $cached = false,
+        ?string $generatedAt = null,
     ): RecipeExplanationPayload {
         return new RecipeExplanationPayload(
             templateId: $context->templateId,
@@ -162,11 +191,64 @@ class RecipeTemplateExplanationService
                 ],
             ],
             meta: [
-                'generated_at' => now()->toIso8601String(),
+                'generated_at' => $generatedAt ?? now()->toIso8601String(),
                 'schema_version' => $context->schemaVersion,
                 'prompt_version' => $context->promptVersion,
-                'cached' => false,
+                'cached' => $cached,
             ],
         );
+    }
+
+    protected function cachedExplanation(RecipeExplanationContext $context): ?array
+    {
+        if (! $this->cacheEnabled()) {
+            return null;
+        }
+
+        $payload = Cache::get($this->cacheKey($context));
+
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        if (! is_array($payload['explanation'] ?? null) || ! is_string($payload['generated_at'] ?? null)) {
+            return null;
+        }
+
+        return $payload;
+    }
+
+    protected function storeCachedExplanation(
+        RecipeExplanationContext $context,
+        array $explanation,
+        string $generatedAt,
+    ): void {
+        if (! $this->cacheEnabled()) {
+            return;
+        }
+
+        Cache::put(
+            $this->cacheKey($context),
+            [
+                'explanation' => $explanation,
+                'generated_at' => $generatedAt,
+            ],
+            now()->addSeconds($this->cacheTtlSeconds())
+        );
+    }
+
+    protected function cacheEnabled(): bool
+    {
+        return (bool) config('ai.explanations.cache.enabled', false);
+    }
+
+    protected function cacheTtlSeconds(): int
+    {
+        return max(1, (int) config('ai.explanations.cache.ttl_seconds', 300));
+    }
+
+    protected function cacheKey(RecipeExplanationContext $context): string
+    {
+        return 'recipe_template_explanations:'.hash('sha256', serialize($context->cachePayload()));
     }
 }

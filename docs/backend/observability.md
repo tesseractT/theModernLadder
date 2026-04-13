@@ -60,6 +60,12 @@ High-signal operational events currently include:
 
 These events intentionally exclude raw bearer tokens, passwords, provider secrets, and full provider payloads.
 
+`recipe_template.explanation.generated` now distinguishes explanation delivery paths through its `source` field:
+
+- `ai` for a fresh provider-backed explanation
+- `fallback` for deterministic fallback output
+- `cache` when a previously validated AI explanation was reused for the same grounded request shape
+
 `security.audit` now also covers privileged moderation decisions, with request correlation and safe transition metadata.
 Admin users can now browse sanitized audit and AI-failure records through the queryable internal `admin_events` store, while the original log events remain unchanged.
 

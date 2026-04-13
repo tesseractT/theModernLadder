@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Recipes;
 
+use App\Modules\AI\Application\Contracts\RecipeExplanationProvider;
 use App\Modules\Ingredients\Domain\Models\Ingredient;
 use App\Modules\Ingredients\Domain\Models\IngredientAlias;
 use App\Modules\Ingredients\Domain\Models\Pairing;
@@ -16,6 +17,7 @@ use App\Modules\Users\Domain\Models\UserPreference;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class GenerateSuggestionsApiTest extends TestCase
@@ -77,6 +79,34 @@ class GenerateSuggestionsApiTest extends TestCase
             ->assertJsonPath('candidates.0.title', 'Tropical Smoothie')
             ->assertJsonPath('candidates.0.match_summary.required_matched', 3)
             ->assertJsonMissing(['entered_name' => 'Onion']);
+    }
+
+    public function test_suggestion_generation_stays_deterministic_and_does_not_invoke_ai_explanations(): void
+    {
+        $user = User::factory()->create();
+        $pineapple = $this->ingredient('Pineapple');
+        $banana = $this->ingredient('Banana');
+
+        $this->recipeTemplate(
+            'Fruit Bowl',
+            'breakfast',
+            ['vegan', 'vegetarian'],
+            [$pineapple, $banana]
+        );
+
+        $this->pantryItem($user, $pineapple);
+        $this->pantryItem($user, $banana);
+
+        $this->mock(RecipeExplanationProvider::class, function (MockInterface $mock): void {
+            $mock->shouldNotReceive('generate');
+        });
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/me/suggestions')
+            ->assertOk()
+            ->assertJsonPath('candidates.0.title', 'Fruit Bowl')
+            ->assertJsonPath('candidates.0.match_summary.required_matched', 2);
     }
 
     public function test_alias_and_canonical_pantry_matching_continues_to_work_for_suggestions(): void

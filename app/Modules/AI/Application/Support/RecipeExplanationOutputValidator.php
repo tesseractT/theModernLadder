@@ -4,7 +4,6 @@ namespace App\Modules\AI\Application\Support;
 
 use App\Modules\AI\Application\DTO\RecipeExplanationContext;
 use App\Modules\AI\Application\Exceptions\InvalidRecipeExplanationException;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -107,22 +106,44 @@ class RecipeExplanationOutputValidator
             ...collect($payload['follow_up_options'] ?? [])->pluck('label')->all(),
         ])->filter()->values();
 
-        $blockedPatterns = [
-            '/\b(diagnos(?:e|is|ed)|treat(?:ment|s|ing)?|cure(?:s|d)?|heal(?:s|ed|ing)?|prevent(?:s|ed|ing)?|therapy|therapeutic|clinical(?:ly)?|prescription|symptom|disease|medical condition)\b/i',
-            '/\b(diabetes|diabetic|hypertension|blood pressure|cholesterol|heart disease|celiac|allerg(?:y|ies)|anaphylaxis|asthma)\b/i',
-            '/\b(allergy[- ]safe|allergen[- ]free|dairy[- ]free|gluten[- ]free|nut[- ]free)\b/i',
-            '/\b\d+\s*(?:calories?|kcal|mg\s+(?:sodium|potassium|calcium)|g\s+(?:protein|fiber|fat)|grams?\s+of\s+(?:protein|fiber|fat))\b/i',
-        ];
-
         foreach ($fragments as $fragment) {
-            foreach ($blockedPatterns as $pattern) {
-                if (preg_match($pattern, (string) $fragment) === 1) {
+            foreach ($this->blockedSafetyPatterns() as $blockedPattern) {
+                if (preg_match($blockedPattern['pattern'], (string) $fragment) === 1) {
                     throw new InvalidRecipeExplanationException(
                         'Recipe explanation output crossed a safety boundary.',
-                        ['fragment' => Arr::first([$fragment])]
+                        [
+                            'reason' => 'safety_boundary_violation',
+                            'category' => $blockedPattern['category'],
+                        ]
                     );
                 }
             }
         }
+    }
+
+    protected function blockedSafetyPatterns(): array
+    {
+        return [
+            [
+                'category' => 'medical_or_diagnostic_claim',
+                'pattern' => '/\b(diagnos(?:e|is|ed)|treat(?:ment|s|ing)?|cure(?:s|d)?|heal(?:s|ed|ing)?|prevent(?:s|ed|ing)?|therapy|therapeutic|clinical(?:ly)?|prescription|symptom|disease|medical condition)\b/i',
+            ],
+            [
+                'category' => 'condition_specific_claim',
+                'pattern' => '/\b(diabetes|diabetic|hypertension|blood pressure|cholesterol|heart disease|celiac|allerg(?:y|ies)|anaphylaxis|asthma)\b/i',
+            ],
+            [
+                'category' => 'allergy_or_allergen_certainty',
+                'pattern' => '/\b(allergy[- ]safe|allergen[- ]free|dairy[- ]free|gluten[- ]free|nut[- ]free|safe for)\b/i',
+            ],
+            [
+                'category' => 'unsupported_certainty_language',
+                'pattern' => '/\b(guarantee(?:d|s)?|definitely|certainly|proven|without fail|no doubt|risk[- ]free)\b/i',
+            ],
+            [
+                'category' => 'exact_nutrition_claim',
+                'pattern' => '/\b\d+\s*(?:calories?|kcal|mg\s+(?:sodium|potassium|calcium)|g\s+(?:protein|fiber|fat)|grams?\s+of\s+(?:protein|fiber|fat))\b/i',
+            ],
+        ];
     }
 }
